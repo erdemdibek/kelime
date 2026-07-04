@@ -22,6 +22,7 @@ let gameState = {};
 let hasChallengeJoker = true;
 let approvalTimer = null;
 let localTimer = null;
+let myPlayerRef = null; // Kendi oyuncu referansımız
 
 // Firebase Güvenli Başlatıcı
 function initFirebase() {
@@ -50,10 +51,13 @@ function createRoom() {
     isAdmin = true;
 
     const roomRef = database.ref(`rooms/${currentRoomId}`);
-    const playerRef = roomRef.child('players').push();
+    myPlayerRef = roomRef.child('players').push();
     
-    playerRef.set({ name: myName, isAdmin: true });
-    playerRef.onDisconnect().remove();
+    myPlayerRef.set({ name: myName, isAdmin: true });
+    
+    // Arka plana almalarda düşmemek için onDisconnect tetikleyicisini yumuşatıyoruz:
+    // Sadece tarayıcı sekmesi tamamen kapatılırsa temizlik yapacak.
+    myPlayerRef.onDisconnect().remove();
 
     roomRef.child('config').set({ concept: selectedConcept }).then(() => {
         openLobbyUI();
@@ -74,9 +78,10 @@ function joinRoom() {
     database.ref(`rooms/${currentRoomId}`).once('value', (snapshot) => {
         if (!snapshot.exists()) return alert("Oda bulunamadı!");
         
-        const playerRef = database.ref(`rooms/${currentRoomId}/players`).push();
-        playerRef.set({ name: myName, isAdmin: false });
-        playerRef.onDisconnect().remove();
+        myPlayerRef = database.ref(`rooms/${currentRoomId}/players`).push();
+        myPlayerRef.set({ name: myName, isAdmin: false });
+        
+        myPlayerRef.onDisconnect().remove();
         
         openLobbyUI();
     }).catch(err => alert("Odaya giriş hatası: " + err.message));
@@ -88,34 +93,58 @@ function openLobbyUI() {
     document.getElementById('game-area').classList.add('hidden');
     document.getElementById('display-room-code').innerText = currentRoomId;
 
-    const startBtn = document.getElementById('start-btn');
-    const waitingText = document.getElementById('lobby-waiting-text');
+    // Oyuncu Listesi ve Dinamik Adminlik Denetleyicisi
+    database.ref(`rooms/${currentRoomId}/players`).on('value', (snapshot) => {
+        const playersList = document.getElementById('players-list');
+        playersList.innerHTML = "";
+        const data = snapshot.val();
+        
+        if (data) {
+            const playersArray = Object.entries(data);
+            
+            // Odada şu an hiç admin var mı kontrol et
+            let hasAdminNow = playersArray.some(([key, p]) => p.isAdmin === true);
+            
+            // Eğer admin odadan tamamen çıktıysa, listedeki ilk oyuncuyu yeni kurucu yapıyoruz!
+            if (!hasAdminNow && playersArray.length > 0) {
+                const [firstPlayerKey, firstPlayerData] = playersArray[0];
+                database.ref(`rooms/${currentRoomId}/players/${firstPlayerKey}`).update({ isAdmin: true });
+                
+                // Eğer o şanslı ilk kişi bensem, beni de admin yap
+                if (firstPlayerData.name === myName) {
+                    isAdmin = true;
+                }
+            }
 
-    if (isAdmin) {
-        startBtn.style.display = "block";
-        waitingText.style.display = "none";
-    } else {
-        startBtn.style.display = "none";
-        waitingText.style.display = "block";
-    }
+            // Kendi adminlik durumumuzu her liste güncellendiğinde teyit edelim
+            playersArray.forEach(([key, p]) => {
+                if (p.name === myName) {
+                    isAdmin = p.isAdmin || false;
+                }
+                playersList.innerHTML += `<li>${p.isAdmin ? "👑 " : ""}${p.name}</li>`;
+            });
+        }
 
+        // Arayüz butonlarını adminlik durumuna göre anlık eşitle
+        const startBtn = document.getElementById('start-btn');
+        const waitingText = document.getElementById('lobby-waiting-text');
+        if (isAdmin) {
+            startBtn.style.display = "block";
+            waitingText.style.display = "none";
+        } else {
+            startBtn.style.display = "none";
+            waitingText.style.display = "block";
+        }
+    });
+
+    // Konsept Dinleyicisi
     database.ref(`rooms/${currentRoomId}/config/concept`).on('value', (snap) => {
         const currentConcept = snap.val() || "Serbest";
         document.getElementById('display-concept').innerText = currentConcept;
         document.getElementById('game-concept-banner').innerText = "KONSEPT: " + currentConcept.toUpperCase();
     });
 
-    database.ref(`rooms/${currentRoomId}/players`).on('value', (snapshot) => {
-        const playersList = document.getElementById('players-list');
-        playersList.innerHTML = "";
-        const data = snapshot.val();
-        if (data) {
-            Object.values(data).forEach(p => {
-                playersList.innerHTML += `<li>${p.isAdmin ? "👑 " : ""}${p.name}</li>`;
-            });
-        }
-    });
-
+    // Oyun Durumu Canlı Dinleyicisi
     database.ref(`rooms/${currentRoomId}/state`).on('value', (snapshot) => {
         gameState = snapshot.val();
         if (gameState && gameState.gameStarted) {
@@ -154,7 +183,7 @@ function startGame() {
             usedWords: [],
             timeLeft: 15,
             winner: "",
-            votes: {} // Oyları tutacağımız alan
+            votes: {}
         }).catch(err => alert("Oyun tetiklenirken hata oluştu: " + err.message));
     });
 }
@@ -207,7 +236,6 @@ function runGameUI() {
     }
 
     if (gameState.isWaitingApproval) {
-        // Şu ana kadar verilen oyları sayalım (Arayüzde kaç kişinin oy verdiğini göstermek için)
         let yesVotes = 0;
         let noVotes = 0;
         if (gameState.votes) {
@@ -220,7 +248,6 @@ function runGameUI() {
         document.getElementById('last-player-display').innerText = `🤔 Oylanıyor (${gameState.approvalTimeLeft}s)`;
         
         if (currentPlayer !== myName && !isEliminated) {
-            // Oyuncu zaten oy vermiş mi kontrol et
             const myVote = gameState.votes ? gameState.votes[myName] : null;
 
             if (!myVote) {
@@ -270,7 +297,7 @@ function submitGuess() {
         pendingGuess: guess,
         isWaitingApproval: true,
         approvalTimeLeft: 10,
-        votes: { "INITIAL_DUMMY": "NONE" } // Oylamayı sıfırla
+        votes: { "INITIAL_DUMMY": "NONE" }
     });
     inputEl.value = "";
 }
@@ -279,14 +306,11 @@ function submitGuess() {
 function castVote(voteType) {
     if (!gameState.isWaitingApproval) return;
     
-    // Veritabanına kendi ismimizle oyumuzu basıyoruz
     database.ref(`rooms/${currentRoomId}/state/votes/${myName}`).set(voteType).then(() => {
-        // Oy verdikten sonra, acaba herkes oyunu kullandı mı diye kontrol edelim
         checkAllVotesCast();
     });
 }
 
-// Tüm aktif ve elenmemiş kişilerin oy verip vermediğini kontrol eden yardımcı fonksiyon
 function checkAllVotesCast() {
     database.ref(`rooms/${currentRoomId}/state`).once('value', (snapshot) => {
         const state = snapshot.val();
@@ -295,10 +319,8 @@ function checkAllVotesCast() {
         const currentPlayer = state.players[state.currentTurnIndex];
         const eliminated = state.eliminatedPlayers || [];
 
-        // Oy vermesi gereken aktif kişi sayısını bul (Oynayan kişi + Elenenler oy veremez)
         const votersNeeded = state.players.filter(p => p !== currentPlayer && !eliminated.includes(p));
         
-        // Verilen geçerli oyları say
         let votesCount = 0;
         if (state.votes) {
             votersNeeded.forEach(p => {
@@ -306,14 +328,12 @@ function checkAllVotesCast() {
             });
         }
 
-        // Eğer herkes oy verdiyse süreyi beklemeden hemen oylamayı sonuçlandır
         if (votesCount >= votersNeeded.length && votersNeeded.length > 0) {
             tallyVotesAndApply(state);
         }
     });
 }
 
-// Oyları sayıp sonucu oyuna yansıtan ana mekanizma
 function tallyVotesAndApply(state) {
     const currentPlayer = state.players[state.currentTurnIndex];
     const eliminated = state.eliminatedPlayers || [];
@@ -329,7 +349,6 @@ function tallyVotesAndApply(state) {
         });
     }
 
-    // 🔴 KRAL KURAL: Çoğunluk RED derse RED. ONAY verirse veya EŞİTLİK olursa ONAY.
     const isAccepted = (yesCount >= noCount); 
 
     if (isAccepted) {
@@ -382,11 +401,9 @@ function startApprovalTimerLoop() {
     if (approvalTimer) clearInterval(approvalTimer);
     approvalTimer = setInterval(() => {
         if (gameState && gameState.gameStarted && gameState.isWaitingApproval && database && !gameState.winner) {
-            // Oylama süresini sadece oda sahibi eksiltsin (Senkronizasyon çakışmaması için en temiz yoldur kanka)
             if (isAdmin) {
                 let newAppTime = gameState.approvalTimeLeft - 1;
                 if (newAppTime <= 0) {
-                    // 10 saniye bitti, mevcut oylarla kararı ver
                     tallyVotesAndApply(gameState);
                 } else {
                     database.ref(`rooms/${currentRoomId}/state`).update({ approvalTimeLeft: newAppTime });
