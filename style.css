@@ -157,3 +157,57 @@ button:active {
     border-radius: 8px;
     margin-top: 15px;
 }
+
+/* 🚨 ELENDİN EKRANI OVERLAY TASARIMI */
+.eliminated-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.eliminated-content {
+    background: rgba(30, 41, 59, 0.9);
+    border: 3px solid #dc2626;
+    padding: 40px 20px;
+    border-radius: 20px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 0 30px rgba(220, 38, 38, 0.4);
+}
+
+.eliminated-title {
+    color: #ef4444;
+    font-size: 3rem;
+    font-weight: 900;
+    letter-spacing: 4px;
+    margin-bottom: 15px;
+    text-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+    animation: shake 0.3s infinite alternate;
+}
+
+.eliminated-subtitle {
+    color: #94a3b8;
+    font-size: 1.1rem;
+    line-height: 1.5;
+}
+
+/* Animasyonlar */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes shake {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    100% { transform: translate(-1px, -1px) rotate(-1deg); }
+}
