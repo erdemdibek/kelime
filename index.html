@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelime Düellosu PRO</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+</head>
+<body>
+
+    <div class="game-container">
+        <h1>🎮 Kelime Düellosu PRO</h1>
+        
+        <div id="auth-area" class="card">
+            <h3>Profilinizi Oluşturun</h3>
+            <input type="text" id="username-input" placeholder="Adınızı yazın...">
+            
+            <hr style="margin: 15px 0; border: 0; border-top: 1px solid rgba(255,255,255,0.1);">
+            
+            <label for="concept-select" style="display:block; margin-bottom:5px; font-size:0.9rem; color:#94a3b8;">Oyun Konsepti Seçin:</label>
+            <select id="concept-select" style="width:100%; padding:10px; margin-bottom:15px; background:#1e293b; color:white; border:1px solid #334155; border-radius:8px;">
+                <option value="Serbest / Mizah">Serbest / Mizah 🎭</option>
+                <option value="Futbolcu">Futbolcu Listesi ⚽</option>
+                <option value="Şehirler">Şehir / Ülke 🌍</option>
+                <option value="Genel Kültür">Genel Kültür 🧠</option>
+            </select>
+
+            <button onclick="createRoom()" style="background-color: #2563eb; margin-bottom: 10px;">Yeni Oda Oluştur ➕</button>
+            
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="room-code-input" placeholder="Oda Kodu" style="margin-bottom: 0;">
+                <button onclick="joinRoom()" style="width: 120px; background-color: #16a34a;">Katıl 🚪</button>
+            </div>
+        </div>
+
+        <div id="lobby-area" class="card hidden">
+            <h3>Oda Kodu: <span id="display-room-code" style="color: #eab308;">----</span></h3>
+            <p style="margin-top:5px; color:#a855f7; font-weight:bold;">Konsept: <span id="display-concept">-</span></p>
+            <p style="margin-top: 15px;">Odadaki Oyuncular:</p>
+            <ul id="players-list" style="list-style: none; color: #4ade80; margin-top: 10px;"></ul>
+            
+            <button id="start-btn" onclick="startGame()" style="margin-top: 20px; background-color: #eab308; display:none;">Oyunu Başlat 🚀</button>
+            <p id="lobby-waiting-text" style="margin-top: 15px; color: #94a3b8; font-size: 0.9rem; display:none;">Oda sahibinin oyunu başlatması bekleniyor...</p>
+        </div>
+
+        <div id="game-area" class="card hidden">
+            <div id="game-concept-banner" style="text-align:center; background:#a855f7; color:white; padding:5px; border-radius:5px; font-weight:bold; margin-bottom:15px; font-size:0.9rem;">KONSEPT: SERBEST</div>
+            
+            <div class="status-box">
+                <div class="info-item">
+                    <span>Sıra Kimde:</span>
+                    <strong id="current-player">-</strong>
+                </div>
+                <div class="info-item alert">
+                    <span>Kalan Süre:</span>
+                    <strong id="timer">15</strong>s
+                </div>
+                <div class="info-item highlight">
+                    <span>Aranan Harf:</span>
+                    <strong id="required-letter">-</strong>
+                </div>
+            </div>
+
+            <div class="last-word-box">
+                <span>Son Kabul Edilen:</span>
+                <h2 id="last-player-display">---</h2>
+            </div>
+
+            <button id="challenge-btn" onclick="useChallenge()" style="display:none; width:100%; background:#ef4444; color:white; padding:10px; margin-bottom:15px; border-radius:8px; font-weight:bold; border:0; animation: pulse 1.5s infinite;">İtiraz Et 🚨 (Hakkınız: 1)</button>
+
+            <div class="input-area">
+                <input type="text" id="player-guess" placeholder="Kelimenizi yazın..." onkeydown="if(event.key === 'Enter') submitGuess()">
+                <button onclick="submitGuess()">Gönder</button>
+            </div>
+
+            <div id="message" class="message"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
