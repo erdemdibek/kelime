@@ -23,7 +23,7 @@ let hasChallengeJoker = true;
 let approvalTimer = null;
 let localTimer = null;
 
-// Firebase Güvenli Başlatıcı (Pencere Objesine Bağlı - Kilitlenmez Sürüm)
+// Firebase Güvenli Başlatıcı
 function initFirebase() {
     if (typeof firebase === 'undefined') {
         alert("Kritik Hata: Firebase SDK kütüphanesi yüklenemedi!");
@@ -83,10 +83,9 @@ function joinRoom() {
 }
 
 function openLobbyUI() {
-    // Ekranları değiştir
     document.getElementById('auth-area').classList.add('hidden');
     document.getElementById('lobby-area').classList.remove('hidden');
-    document.getElementById('game-area').classList.add('hidden'); // Garanti olsun
+    document.getElementById('game-area').classList.add('hidden');
     document.getElementById('display-room-code').innerText = currentRoomId;
 
     const startBtn = document.getElementById('start-btn');
@@ -100,14 +99,12 @@ function openLobbyUI() {
         waitingText.style.display = "block";
     }
 
-    // Konsept Dinleyicisi
     database.ref(`rooms/${currentRoomId}/config/concept`).on('value', (snap) => {
         const currentConcept = snap.val() || "Serbest";
         document.getElementById('display-concept').innerText = currentConcept;
         document.getElementById('game-concept-banner').innerText = "KONSEPT: " + currentConcept.toUpperCase();
     });
 
-    // Oyuncu Listesi Dinleyicisi
     database.ref(`rooms/${currentRoomId}/players`).on('value', (snapshot) => {
         const playersList = document.getElementById('players-list');
         playersList.innerHTML = "";
@@ -119,11 +116,9 @@ function openLobbyUI() {
         }
     });
 
-    // Oyun Durumu (State) Canlı Dinleyicisi (UI tetikleyici kalbi)
     database.ref(`rooms/${currentRoomId}/state`).on('value', (snapshot) => {
         gameState = snapshot.val();
         if (gameState && gameState.gameStarted) {
-            // Oyun başladıysa lobiyi uçur, ana sahneyi aç
             document.getElementById('lobby-area').classList.add('hidden');
             runGameUI();
             
@@ -146,10 +141,10 @@ function startGame() {
 
         const playerArray = Object.values(data).map(p => p.name);
         
-        // Veritabanına başlangıç paketini basıyoruz
         database.ref(`rooms/${currentRoomId}/state`).set({
             gameStarted: true,
             players: playerArray,
+            eliminatedPlayers: [""], // Boş dizi hatası vermemesi için
             currentTurnIndex: 0,
             lastLetter: "",
             lastPlayerDisplay: "---",
@@ -157,7 +152,8 @@ function startGame() {
             isWaitingApproval: false,
             approvalTimeLeft: 5,
             usedWords: [],
-            timeLeft: 15
+            timeLeft: 15,
+            winner: ""
         }).catch(err => alert("Oyun tetiklenirken hata oluştu: " + err.message));
     });
 }
@@ -165,6 +161,34 @@ function startGame() {
 // 3. EKRAN VE BUTON GÜNCELLEMELERİ
 function runGameUI() {
     document.getElementById('game-area').classList.remove('hidden');
+
+    // Oyun bittiyse (Kazanan varsa) Kazanan Ekranını Göster
+    if (gameState.winner) {
+        if (localTimer) clearInterval(localTimer);
+        if (approvalTimer) clearInterval(approvalTimer);
+        
+        document.getElementById('eliminated-overlay').classList.add('hidden');
+        const msgEl = document.getElementById('message');
+        msgEl.innerHTML = `
+            <div style="text-align:center; padding:20px; background:#1e293b; border:3px solid #16a34a; border-radius:10px; margin-top:20px;">
+                <h2 style="color:#16a34a; font-size:24px; font-weight:bold; margin-bottom:10px;">👑 ŞAMPİYON 👑</h2>
+                <p style="color:white; font-size:20px; font-weight:bold;">${gameState.winner}</p>
+                <p style="color:#64748b; margin-top:10px;">Oyun bitti, harika bir mücadeleydi kanka!</p>
+            </div>
+        `;
+        document.getElementById('player-guess').disabled = true;
+        const submitBtn = document.querySelector('.input-area button');
+        if (submitBtn) submitBtn.disabled = true;
+        return;
+    }
+
+    // Ben elendim mi kontrolü
+    const isEliminated = gameState.eliminatedPlayers && gameState.eliminatedPlayers.includes(myName);
+    if (isEliminated) {
+        document.getElementById('eliminated-overlay').classList.remove('hidden');
+    } else {
+        document.getElementById('eliminated-overlay').classList.add('hidden');
+    }
 
     const currentPlayer = gameState.players[gameState.currentTurnIndex];
     document.getElementById('current-player').innerText = currentPlayer;
@@ -176,7 +200,7 @@ function runGameUI() {
     const submitBtn = document.querySelector('.input-area button');
     const challengeBtn = document.getElementById('challenge-btn');
 
-    if (gameState.lastRejectedPlayer === myName && hasChallengeJoker && !gameState.isWaitingApproval) {
+    if (gameState.lastRejectedPlayer === myName && hasChallengeJoker && !gameState.isWaitingApproval && !isEliminated) {
         challengeBtn.style.display = "block";
         challengeBtn.innerText = `İtiraz Et 🚨 (Kelimeniz: "${gameState.lastRejectedWord}")`;
     } else {
@@ -186,7 +210,7 @@ function runGameUI() {
     if (gameState.isWaitingApproval) {
         document.getElementById('last-player-display').innerText = `🤔 Onay Bekliyor (${gameState.approvalTimeLeft}s)`;
         
-        if (currentPlayer !== myName) {
+        if (currentPlayer !== myName && !isEliminated) {
             msgEl.innerHTML = `
                 <div class="approval-box">
                     <p style="color:#eab308; font-weight:bold; margin-bottom:10px;">${currentPlayer} şunu yazdı: "${gameState.pendingGuess}"</p>
@@ -202,8 +226,8 @@ function runGameUI() {
     } else {
         document.getElementById('last-player-display').innerText = gameState.lastPlayerDisplay;
         msgEl.innerText = "";
-        inputEl.disabled = false;
-        if (submitBtn) submitBtn.disabled = false;
+        inputEl.disabled = isEliminated;
+        if (submitBtn) submitBtn.disabled = isEliminated;
     }
 }
 
@@ -214,6 +238,7 @@ function submitGuess() {
     if (!guess || gameState.isWaitingApproval) return;
 
     if (gameState.players[gameState.currentTurnIndex] !== myName) return alert("Sıra sizde değil!");
+    if (gameState.eliminatedPlayers && gameState.eliminatedPlayers.includes(myName)) return alert("Elendiniz, kelime gönderemezsiniz!");
 
     const lowerGuess = guess.toLowerCase();
     if (gameState.lastLetter && lowerGuess[0] !== gameState.lastLetter) return alert(`Kelime ${gameState.lastLetter.toUpperCase()} ile başlamalı!`);
@@ -238,7 +263,9 @@ function approveGuess(isAccepted) {
         let lastChar = lowerWord[lowerWord.length - 1];
         if (lastChar === "ğ" && lowerWord.length > 1) lastChar = lowerWord[lowerWord.length - 2];
 
-        const nextIndex = (gameState.currentTurnIndex + 1) % gameState.players.length;
+        // Sıradaki aktif elenmemiş oyuncuyu bul
+        let nextIndex = getNextActivePlayerIndex(gameState.currentTurnIndex);
+
         const updatedWords = gameState.usedWords ? [...gameState.usedWords, lowerWord] : [lowerWord];
 
         database.ref(`rooms/${currentRoomId}/state`).update({
@@ -261,11 +288,26 @@ function approveGuess(isAccepted) {
     }
 }
 
+// Yardımcı Fonksiyon: Elenmemiş sonraki oyuncunun sırasını bulur
+function getNextActivePlayerIndex(currentIndex) {
+    let nextIndex = currentIndex;
+    let loopCount = 0;
+    while (loopCount < gameState.players.length) {
+        nextIndex = (nextIndex + 1) % gameState.players.length;
+        const pName = gameState.players[nextIndex];
+        if (!gameState.eliminatedPlayers || !gameState.eliminatedPlayers.includes(pName)) {
+            return nextIndex;
+        }
+        loopCount++;
+    }
+    return currentIndex;
+}
+
 // 6. SÜRE DÖNGÜLERİ
 function startApprovalTimerLoop() {
     if (approvalTimer) clearInterval(approvalTimer);
     approvalTimer = setInterval(() => {
-        if (gameState && gameState.gameStarted && gameState.isWaitingApproval && database) {
+        if (gameState && gameState.gameStarted && gameState.isWaitingApproval && database && !gameState.winner) {
             const isMyTurn = gameState.players[gameState.currentTurnIndex] === myName;
             if (!isMyTurn) {
                 let newAppTime = gameState.approvalTimeLeft - 1;
@@ -282,16 +324,38 @@ function startApprovalTimerLoop() {
 function startTimerLoop() {
     if (localTimer) clearInterval(localTimer);
     localTimer = setInterval(() => {
-        if (gameState && gameState.gameStarted && !gameState.isWaitingApproval && database) {
+        if (gameState && gameState.gameStarted && !gameState.isWaitingApproval && database && !gameState.winner) {
             const isMyTurn = gameState.players[gameState.currentTurnIndex] === myName;
             if (isMyTurn) {
                 let newTime = gameState.timeLeft - 1;
+                
                 if (newTime <= 0) {
-                    const nextIndex = (gameState.currentTurnIndex + 1) % gameState.players.length;
-                    database.ref(`rooms/${currentRoomId}/state`).update({
-                        currentTurnIndex: nextIndex,
-                        timeLeft: 15
-                    });
+                    // SÜRE BİTTİ: OYUNCU ELENİYOR
+                    let currentEliminated = gameState.eliminatedPlayers ? [...gameState.eliminatedPlayers] : [];
+                    if (!currentEliminated.includes(myName)) {
+                        currentEliminated.push(myName);
+                    }
+
+                    // Kalan aktif oyuncuları hesapla
+                    const activePlayers = gameState.players.filter(p => !currentEliminated.includes(p));
+
+                    if (activePlayers.length <= 1) {
+                        // Sadece 1 kişi kaldı, o şampiyon!
+                        const finalWinner = activePlayers.length === 1 ? activePlayers[0] : "Bilinmeyen Şampiyon";
+                        database.ref(`rooms/${currentRoomId}/state`).update({
+                            eliminatedPlayers: currentEliminated,
+                            winner: finalWinner,
+                            timeLeft: 0
+                        });
+                    } else {
+                        // Oyun devam ediyor, sıradaki elenmemiş adama devret
+                        let nextIndex = getNextActivePlayerIndex(gameState.currentTurnIndex);
+                        database.ref(`rooms/${currentRoomId}/state`).update({
+                            eliminatedPlayers: currentEliminated,
+                            currentTurnIndex: nextIndex,
+                            timeLeft: 15
+                        });
+                    }
                 } else {
                     database.ref(`rooms/${currentRoomId}/state`).update({ timeLeft: newTime });
                 }
@@ -303,6 +367,9 @@ function startTimerLoop() {
 // 7. İTİRAZ JOKERİ SİSTEMİ
 function useChallenge() {
     if (!hasChallengeJoker) return;
+    const isEliminated = gameState.eliminatedPlayers && gameState.eliminatedPlayers.includes(myName);
+    if (isEliminated) return;
+
     hasChallengeJoker = false;
     document.getElementById('challenge-btn').style.display = "none";
 
@@ -311,7 +378,7 @@ function useChallenge() {
     let lastChar = lowerWord[lowerWord.length - 1];
     if (lastChar === "ğ" && lowerWord.length > 1) lastChar = lowerWord[lowerWord.length - 2];
 
-    const nextIndex = (gameState.currentTurnIndex + 1) % gameState.players.length;
+    let nextIndex = getNextActivePlayerIndex(gameState.currentTurnIndex);
     const updatedWords = gameState.usedWords ? [...gameState.usedWords, lowerWord] : [lowerWord];
     let penaltyTime = Math.max(5, gameState.timeLeft - 5);
 
