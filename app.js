@@ -150,7 +150,7 @@ function startGame() {
             lastPlayerDisplay: "---",
             pendingGuess: "",
             isWaitingApproval: false,
-            approvalTimeLeft: 5,
+            approvalTimeLeft: 10,
             usedWords: [],
             timeLeft: 15,
             winner: ""
