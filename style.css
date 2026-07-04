@@ -1,161 +1,270 @@
-/* Temel Sayfa Ayarları */
+/* --- PREMIUM MODERN OYUN TEMASI --- */
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
 }
 
 body {
-    background: linear-gradient(135deg, #121e15 0%, #1a3623 100%);
-    color: #f5f5f5;
+    background: #0b130e;
+    /* Dinamik ve derinlikli arka plan ışığı */
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(34, 197, 94, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(163, 230, 53, 0.05) 0px, transparent 50%),
+        radial-gradient(at 50% 50%, #0c1a11 0px, #070d0a 100%);
+    color: #f8fafc;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    padding: 20px;
+    padding: 15px;
+    overflow-x: hidden;
 }
 
 .game-container {
     width: 100%;
-    max-width: 500px;
+    max-width: 480px;
     text-align: center;
+    animation: fadeInContainer 0.6s ease-out;
 }
 
 h1 {
-    margin-bottom: 20px;
-    font-size: 2.3rem;
-    text-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 25px;
+    background: linear-gradient(to right, #4ade80, #a3e635);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 4px 20px rgba(74, 222, 128, 0.15);
 }
 
+/* Geliştirilmiş Cam Kart Yapısı */
 .card {
-    background: rgba(255, 255, 255, 0.07);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
-    padding: 30px;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    background: rgba(15, 27, 20, 0.6);
+    backdrop-filter: blur(16px) saturate(120%);
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: 
+        0 4px 30px rgba(0, 0, 0, 0.4),
+        inset 0 1px 1px rgba(255, 255, 255, 0.05);
     margin-bottom: 20px;
 }
 
 h3 {
-    margin-bottom: 15px;
+    margin-bottom: 18px;
     color: #a3e635;
+    font-size: 1.25rem;
+    font-weight: 700;
 }
 
-input[type="text"] {
+label {
+    font-weight: 500;
+}
+
+/* Premium Giriş Alanları */
+input[type="text"], select {
     width: 100%;
-    padding: 12px 16px;
-    border-radius: 8px;
-    border: 2px solid #2e5c3c;
-    background-color: #112216;
+    padding: 14px 18px;
+    border-radius: 12px;
+    border: 1px solid rgba(46, 92, 60, 0.4);
+    background-color: rgba(11, 22, 14, 0.8);
     color: #fff;
     font-size: 1rem;
     outline: none;
-    transition: border-color 0.3s;
-    margin-bottom: 15px;
+    transition: all 0.25s ease;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
 }
 
-input[type="text"]:focus {
+input[type="text"]:focus, select:focus {
     border-color: #4ade80;
+    box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.15), inset 0 2px 4px rgba(0,0,0,0.2);
 }
 
+/* Premium Oyuncu ve Konsept Listesi */
+#players-list {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    padding: 10px;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+#players-list li {
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    border-left: 3px solid #22c55e;
+}
+
+#players-list li:last-child {
+    margin-bottom: 0;
+}
+
+/* Modern Gradient Butonlar */
 button {
     width: 100%;
-    padding: 12px;
-    background-color: #22c55e;
+    padding: 14px;
+    background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
     color: white;
     border: none;
-    border-radius: 8px;
+    border-radius: 12px;
     font-size: 1rem;
-    font-weight: bold;
+    font-weight: 700;
     cursor: pointer;
-    transition: background-color 0.2s, transform 0.1s;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
 }
 
 button:hover {
-    background-color: #16a34a;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(22, 163, 74, 0.3);
+    filter: brightness(1.1);
 }
 
 button:active {
-    transform: scale(0.98);
+    transform: translateY(1px);
+    box-shadow: 0 2px 6px rgba(22, 163, 74, 0.2);
 }
 
+/* Farklı Renkteki Özel Butonlar İçin Geçişler */
+button[onclick="createRoom()"] {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+button[onclick="createRoom()"]:hover {
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+}
+
+#start-btn {
+    background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%);
+    box-shadow: 0 4px 12px rgba(234, 179, 8, 0.2);
+    color: #0f172a;
+}
+#start-btn:hover {
+    box-shadow: 0 6px 16px rgba(234, 179, 8, 0.3);
+}
+
+/* Durum Paneli (Dashboard Hissiyatı) */
 .status-box {
     display: flex;
     justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 25px;
+    gap: 8px;
+    margin-bottom: 20px;
 }
 
 .info-item {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 10px;
-    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+    padding: 12px 8px;
+    border-radius: 14px;
     flex: 1;
-    font-size: 0.85rem;
+    transition: all 0.3s ease;
 }
 
 .info-item span {
     display: block;
-    color: #94a3b8;
-    margin-bottom: 5px;
+    color: #64748b;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
 }
 
 .info-item strong {
-    font-size: 1.2rem;
-    color: #fff;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #f1f5f9;
 }
 
+/* Alarm ve Öne Çıkan Kutuların Parlamaları */
+.info-item.alert {
+    border-color: rgba(239, 68, 68, 0.2);
+    background: rgba(239, 68, 68, 0.04);
+}
 .info-item.alert strong {
-    color: #ef4444;
+    color: #f87171;
+    text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
 }
 
+.info-item.highlight {
+    border-color: rgba(234, 179, 8, 0.2);
+    background: rgba(234, 179, 8, 0.04);
+}
 .info-item.highlight strong {
-    color: #eab308;
+    color: #fbbf24;
+    text-shadow: 0 0 10px rgba(234, 179, 8, 0.3);
 }
 
+/* Son Kabul Edilen Kelime Kutusu */
 .last-word-box {
-    background: rgba(34, 197, 94, 0.1);
-    border: 1px dashed #22c55e;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 25px;
+    background: rgba(34, 197, 94, 0.03);
+    border: 1px dashed rgba(34, 197, 94, 0.3);
+    padding: 18px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    position: relative;
 }
 
 .last-word-box span {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
+    font-weight: 700;
     color: #4ade80;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .last-word-box h2 {
-    font-size: 1.8rem;
-    margin-top: 5px;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin-top: 6px;
+    letter-spacing: -0.5px;
 }
 
+/* İnput Grubu Yan Yana Düzen */
+.input-area {
+    display: flex;
+    gap: 8px;
+}
+
+.input-area input {
+    margin-bottom: 0;
+    flex: 1;
+}
+
+.input-area button {
+    width: auto;
+    padding: 14px 24px;
+}
+
+/* Onay Kutusu Mesaj Alanı */
 .message {
     margin-top: 15px;
     font-size: 0.95rem;
-    font-weight: 500;
     min-height: 24px;
 }
 
-.hidden {
-    display: none !important;
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.02); background: #dc2626; }
-    100% { transform: scale(1); }
-}
-
 .approval-box {
-    background: rgba(234, 179, 8, 0.1);
-    border: 1px dashed #eab308;
-    padding: 15px;
-    border-radius: 8px;
-    margin-top: 15px;
+    background: rgba(234, 179, 8, 0.05);
+    border: 1px solid rgba(234, 179, 8, 0.2);
+    padding: 16px;
+    border-radius: 14px;
+    margin-top: 5px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    animation: fadeInContainer 0.3s ease-out;
 }
 
 /* 🚨 ELENDİN EKRANI OVERLAY TASARIMI */
@@ -165,8 +274,9 @@ button:active {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(8px);
+    background: rgba(4, 7, 5, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -175,39 +285,54 @@ button:active {
 }
 
 .eliminated-content {
-    background: rgba(30, 41, 59, 0.9);
-    border: 3px solid #dc2626;
-    padding: 40px 20px;
-    border-radius: 20px;
-    max-width: 400px;
-    width: 90%;
+    background: rgba(15, 23, 42, 0.95);
+    border: 2px solid #ef4444;
+    padding: 45px 25px;
+    border-radius: 28px;
+    max-width: 380px;
+    width: 88%;
     text-align: center;
-    box-shadow: 0 0 30px rgba(220, 38, 38, 0.4);
+    box-shadow: 0 0 40px rgba(239, 68, 68, 0.25);
 }
 
 .eliminated-title {
     color: #ef4444;
-    font-size: 3rem;
+    font-size: 3.2rem;
     font-weight: 900;
-    letter-spacing: 4px;
+    letter-spacing: 6px;
     margin-bottom: 15px;
-    text-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
-    animation: shake 0.3s infinite alternate;
+    text-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+    animation: shake 0.4s infinite alternate;
 }
 
 .eliminated-subtitle {
     color: #94a3b8;
-    font-size: 1.1rem;
-    line-height: 1.5;
+    font-size: 1rem;
+    line-height: 1.6;
 }
 
-/* Animasyonlar */
+.hidden {
+    display: none !important;
+}
+
+/* Animasyon Tanımlamaları */
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
 }
 
+@keyframes fadeInContainer {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 @keyframes shake {
     0% { transform: translate(1px, 1px) rotate(0deg); }
-    100% { transform: translate(-1px, -1px) rotate(-1deg); }
+    100% { transform: translate(-1px, -1px) rotate(-0.5deg); }
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2); }
+    50% { transform: scale(1.01); background: #dc2626; box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4); }
+    100% { transform: scale(1); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2); }
 }
