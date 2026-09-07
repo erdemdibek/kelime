@@ -62,7 +62,6 @@
             text-transform: uppercase;
         }
 
-        /* Budget Summary Panel */
         .summary-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -98,7 +97,6 @@
         .val-spent { color: var(--success-color); }
         .val-remaining { color: var(--accent-red); }
 
-        /* Progress Card */
         .progress-card {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -146,7 +144,6 @@
             box-shadow: 0 0 12px var(--accent-cyan);
         }
 
-        /* Table Styling */
         .table-container {
             background: var(--card-bg);
             border: 1px solid var(--border-color);
@@ -191,7 +188,6 @@
             background: rgba(255, 255, 255, 0.03);
         }
 
-        /* Checked State */
         tr.completed {
             background: rgba(0, 255, 136, 0.05);
         }
@@ -217,7 +213,6 @@
             color: #fff;
         }
 
-        /* Input Price Styling */
         .price-input {
             width: 100px;
             background: rgba(0, 0, 0, 0.4);
@@ -243,7 +238,6 @@
             margin-left: 4px;
         }
 
-        /* Checkbox Styling */
         .checkbox-container {
             display: flex;
             justify-content: center;
@@ -280,11 +274,9 @@
             transform: translate(-50%, -50%);
         }
 
-        /* Responsive Mobile Layout */
         @media (max-width: 768px) {
             h1 { font-size: 1.6rem; }
             .subtitle { font-size: 0.85rem; }
-            
             thead { display: none; }
             
             tr {
@@ -339,7 +331,6 @@
         <div class="subtitle">Bütçe & Parça Takip Paneli</div>
     </header>
 
-    <!-- Bütçe Özet Kartları -->
     <div class="summary-grid">
         <div class="summary-card">
             <div class="summary-title">Hedef Bütçe</div>
@@ -355,7 +346,6 @@
         </div>
     </div>
 
-    <!-- İlerleme Kartı -->
     <div class="progress-card">
         <div class="progress-header">
             <span class="progress-title">SİSTEM İLERLEMESİ</span>
@@ -366,7 +356,6 @@
         </div>
     </div>
 
-    <!-- Parça Listesi Tablosu -->
     <div class="table-container">
         <table>
             <thead>
@@ -407,10 +396,10 @@
                 </tr>
                 <tr>
                     <td><span class="component-type">Anakart</span></td>
-                    <td><span class="component-name">ASUS ROG STRIX B650E-F</span></td>
-                    <td>Güçlü VRM yapısı, PCIe 5.0 ekran kartı ve M.2 desteği.</td>
+                    <td><span class="component-name">ASUS TUF GAMING B650-PLUS WIFI</span></td>
+                    <td>Askeri sınıf bileşenler, güçlü VRM soğutması ve yüksek F/P oranı.</td>
                     <td class="price-col">
-                        <div><input type="number" class="price-input" value="8500" oninput="calculateBudget()"><span class="currency-label">₺</span></div>
+                        <div><input type="number" class="price-input" value="6500" oninput="calculateBudget()"><span class="currency-label">₺</span></div>
                     </td>
                     <td class="status-col">
                         <div class="checkbox-container">
@@ -501,9 +490,7 @@
             const checkbox = row.querySelector('.custom-checkbox');
             const price = parseFloat(priceInput.value) || 0;
 
-            // Fiyatı kaydet
             localStorage.setItem('price_' + index, price);
-
             totalBudget += price;
 
             if (checkbox.checked) {
@@ -519,12 +506,10 @@
 
         const remainingBudget = totalBudget - spentBudget;
 
-        // Bütçe kartlarını güncelle
         document.getElementById('total-budget').innerText = totalBudget.toLocaleString('tr-TR') + ' ₺';
         document.getElementById('spent-budget').innerText = spentBudget.toLocaleString('tr-TR') + ' ₺';
         document.getElementById('remaining-budget').innerText = remainingBudget.toLocaleString('tr-TR') + ' ₺';
 
-        // İlerleme çubuğunu güncelle
         const percentage = Math.round((checkedCount / totalParts) * 100);
         document.getElementById('progress-fill').style.width = percentage + '%';
 
@@ -535,7 +520,6 @@
         }
     }
 
-    // Sayfa yüklendiğinde hafızadaki verileri getir
     window.onload = function() {
         const rows = document.querySelectorAll('#parts-list tr');
         rows.forEach((row, index) => {
