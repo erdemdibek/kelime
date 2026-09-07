@@ -3,116 +3,415 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Futbolcu / Kelime Düellosu</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <title>AM5 Monster PC Build Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0e14;
+            --card-bg: rgba(20, 25, 35, 0.75);
+            --accent-red: #ff0055;
+            --accent-cyan: #00f0ff;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --success-color: #00ff88;
+            --border-color: rgba(0, 240, 255, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 0, 85, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 240, 255, 0.1) 0%, transparent 40%);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px 10px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #fff;
+            text-shadow: 0 0 10px var(--accent-cyan), 0 0 20px var(--accent-cyan);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--accent-red);
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* Progress Card */
+        .progress-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .progress-title {
+            font-size: 1.1rem;
+            color: var(--accent-cyan);
+        }
+
+        .progress-status {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--success-color);
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 14px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-red), var(--accent-cyan));
+            border-radius: 10px;
+            transition: width 0.4s ease-in-out;
+            box-shadow: 0 0 12px var(--accent-cyan);
+        }
+
+        /* Table Styling */
+        .table-container {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        thead {
+            background: rgba(0, 240, 255, 0.1);
+            border-bottom: 2px solid var(--border-color);
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        th {
+            padding: 16px;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 1.05rem;
+            vertical-align: middle;
+        }
+
+        tr {
+            transition: background 0.3s ease;
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* Checked State */
+        tr.completed {
+            background: rgba(0, 255, 136, 0.05);
+        }
+
+        tr.completed td {
+            color: var(--text-muted);
+        }
+
+        tr.completed td.component-name {
+            text-decoration: line-through;
+            color: var(--success-color);
+        }
+
+        .component-type {
+            font-weight: 700;
+            color: var(--accent-cyan);
+            display: block;
+        }
+
+        .component-name {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #fff;
+        }
+
+        /* Checkbox Styling */
+        .checkbox-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .custom-checkbox {
+            width: 26px;
+            height: 26px;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid var(--accent-cyan);
+            border-radius: 6px;
+            cursor: pointer;
+            position: relative;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .custom-checkbox:checked {
+            background: var(--success-color);
+            border-color: var(--success-color);
+            box-shadow: 0 0 10px var(--success-color);
+        }
+
+        .custom-checkbox:checked::after {
+            content: '✓';
+            position: absolute;
+            color: #000;
+            font-size: 18px;
+            font-weight: bold;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Responsive Mobile Layout */
+        @media (max-width: 768px) {
+            h1 { font-size: 1.6rem; }
+            .subtitle { font-size: 0.9rem; }
+            
+            thead { display: none; }
+            
+            tr {
+                display: block;
+                padding: 12px;
+                border-bottom: 1px solid var(--border-color);
+            }
+            
+            td {
+                display: block;
+                padding: 6px 0;
+                border: none;
+            }
+
+            td.status-col {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border-top: 1px dashed rgba(255, 255, 255, 0.1);
+                margin-top: 8px;
+                padding-top: 10px;
+            }
+
+            td.status-col::before {
+                content: "Durum:";
+                font-family: 'Orbitron', sans-serif;
+                font-size: 0.85rem;
+                color: var(--accent-cyan);
+            }
+        }
+    </style>
 </head>
 <body>
 
-    <div class="game-container">
-        <h1>⚽ KELİME DÜELLOSU ⚽</h1>
+<div class="container">
+    <header>
+        <h1>AM5 MONSTER BUILD</h1>
+        <div class="subtitle">Hayalindeki Sistem Adım Adım Tamamlanıyor</div>
+    </header>
 
-        <div id="auth-area" class="card">
-            <h3>Oyuncu Girişi</h3>
-            <input type="text" id="username-input" placeholder="Adınızı yazın...">
-            
-            <div style="margin: 20px 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
-                <label style="display:block; text-align:left; margin-bottom:8px; font-size:0.9rem; color:#94a3b8;">KONSEPT SEÇİN (Sadece Kurucu):</label>
-                <select id="concept-select">
-                    <option value="Futbolcu">Futbolcu İsmi</option>
-                    <option value="Şehir">Şehir / Ülke</option>
-                    <option value="Araba">Araba Markası / Modeli</option>
-                    <option value="Yemek">Yemek / Meyve / Sebze</option>
-                    <option value="Serbest">Serbest Konsept (Her Şey)</option>
-                </select>
-            </div>
-
-            <div style="margin: 20px 0; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; margin-bottom: 25px;">
-                <label style="display:block; text-align:left; margin-bottom:8px; font-size:0.9rem; color:#94a3b8;">MULTIPLAYER MODU:</label>
-                <select id="mode-select">
-                    <option value="CLASSIC">Klasik Mod (Kişisel 15s)</option>
-                    <option value="BOMB">💣 Bomba Modu (Ortak 60s)</option>
-                </select>
-            </div>
-
-            <button onclick="createRoom()" style="margin-bottom: 12px;">Yeni Oda Oluştur 👑</button>
-            
-            <div style="display: flex; gap: 8px; margin-top: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 25px;">
-                <input type="text" id="room-code-input" placeholder="Oda Kodu" style="margin-bottom: 0; flex: 1;">
-                <button onclick="joinRoom()" style="width: auto; padding: 12px 20px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);">Odaya Gir</button>
-            </div>
-
-            <div style="margin-top: 20px;">
-                <h4 style="color:#94a3b8; font-size:0.85rem; margin-bottom:10px; text-align:center; letter-spacing:1px;">TEK BAŞINA ANTRENMAN</h4>
-                <button onclick="startSinglePlayer()" style="background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);">Tek Oyunculu (Arcade) 🕹️</button>
-                <p id="high-score-display" style="color: #a78bfa; font-size: 0.85rem; margin-top: 8px; font-style: italic; text-align: center;">En Yüksek Skor: 0 Kelime</p>
-            </div>
+    <!-- İlerleme Kartı -->
+    <div class="progress-card">
+        <div class="progress-header">
+            <span class="progress-title">SİSTEM İLERLEMESİ</span>
+            <span class="progress-status" id="progress-text">0 / 8 Parça</span>
         </div>
-
-        <div id="lobby-area" class="card hidden">
-            <h3>Lobi Odası: <span id="display-room-code" style="color: #4ade80;">----</span></h3>
-            <p style="margin-bottom: 15px; font-size: 0.95rem; color: #94a3b8;">
-                <span id="display-concept">---</span> | <span id="display-mode" style="color:#eab308; font-weight:bold;">---</span>
-            </p>
-            
-            <h4 style="text-align: left; margin-bottom: 10px; font-size: 0.9rem; color: #94a3b8;">Bağlanan Oyuncular:</h4>
-            <ul id="players-list"></ul>
-            
-            <div style="margin-top: 25px;">
-                <button id="start-btn" onclick="startGame()" style="display: none;">Oyunu Başlat 🚀</button>
-                <p id="lobby-waiting-text" style="color: #94a3b8; font-style: italic;">Kurucunun oyunu başlatması bekleniyor...</p>
-            </div>
-        </div>
-
-        <div id="game-area" class="card hidden">
-            <div id="game-concept-banner" style="background: rgba(34, 197, 94, 0.15); padding: 8px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; color: #4ade80; margin-bottom: 15px; letter-spacing: 1px;">KONSEPT: ---</div>
-            
-            <div class="status-box">
-                <div class="info-item">
-                    <span id="player-title-label">Sıra Kimde</span>
-                    <strong id="current-player" style="color: #4ade80;">---</strong>
-                </div>
-                <div class="info-item highlight">
-                    <span>Aranan Harf</span>
-                    <strong id="required-letter">-</strong>
-                </div>
-                <div class="info-item alert" id="timer-box">
-                    <span id="timer-label">Kalan Süre</span>
-                    <strong id="timer">15</strong>
-                </div>
-            </div>
-
-            <div class="last-word-box">
-                <span id="last-word-label">Son Kabul Edilen Kelime</span>
-                <h2 id="last-player-display">---</h2>
-            </div>
-
-            <div class="input-area">
-                <input type="text" id="player-guess" placeholder="Kelimenizi yazın..." onkeydown="if(event.key === 'Enter') submitGuess()">
-                <button onclick="submitGuess()">Gönder</button>
-            </div>
-
-            <button id="challenge-btn" onclick="useChallenge()" style="margin-top: 15px; background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2); display: none;">İtiraz Et 🚨</button>
-
-            <div id="message" class="message"></div>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="progress-fill"></div>
         </div>
     </div>
 
-    <div id="eliminated-overlay" class="eliminated-screen hidden">
-        <div class="eliminated-content">
-            <div class="eliminated-title">ELENDİN</div>
-            <div class="eliminated-subtitle">Süreniz bitti veya grubun gazabına uğradınız. Arkadaşlarının kapışmasını izleyebilirsin kanka!</div>
-        </div>
+    <!-- Parça Listesi Tablosu -->
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 20%;">Bileşen</th>
+                    <th style="width: 30%;">Seçilen Model</th>
+                    <th style="width: 38%;">Öne Çıkan Özellikler</th>
+                    <th style="width: 12%; text-align: center;">Durum</th>
+                </tr>
+            </thead>
+            <tbody id="parts-list">
+                <tr>
+                    <td><span class="component-type">İşlemci (CPU)</span></td>
+                    <td><span class="component-name">AMD Ryzen 7 7800X3D</span></td>
+                    <td>96 MB L3 3D V-Cache önbelleği ile saf oyun performansının zirvesi.</td>
+                    <td class="status-col">
+                        <div class="checkbox-container">
+                            <input type="checkbox" class="custom-checkbox" onchange="updateProgress()">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="component-type">Ekran Kartı (GPU)</span></td>
+                    <td><span class="component-name">NVIDIA RTX 4070 Ti Super 16GB</span></td>
+                    <td>16 GB VRAM, DLSS 3.5 ve Ray Tracing desteği ile 2K/4K yüksek performans.</td>
+                    <td class="status-col">
+                        <div class="checkbox-container">
+                            <input type="checkbox" class="custom-checkbox" onchange="updateProgress()">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="component-type">Anakart</span></td>
+                    <td><span class="component-name">ASUS ROG STRIX B650E-F GAMING</span></td>
+                    <td>Güçlü VRM yapısı, PCIe 5.0 ekran kartı ve M.2 desteği.</td>
+                    <td class="status-col">
+                        <div class="checkbox-container">
+                            <input type="checkbox" class="custom-checkbox" onchange="updateProgress()">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="component-type">Bellek (RAM)</span></td>
+                    <td><span class="component-name">32 GB (2x16) DDR5 6000MHz CL30</span></td>
+                    <td>AM5 mimarisi için en ideal hız, EXPO desteği ve düşük gecikme.</td>
+                    <td class="status-col">
+                        <div class="checkbox-container">
+                            <input type="checkbox" class="custom-checkbox" onchange="updateProgress()">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="component-type">Depolama (SSD)</span></td>
+                    <td><span class="component-name">1 TB PCIe 5.0 M.2 NVMe SSD</span></td>
+                    <td>10.000+ MB/s okuma hızı ile ultra hızlı veri aktarımı ve yükleme.</td>
+                    <td class="status-col">
+                        <div class="checkbox-container">
+                            <input type="checkbox" class="custom-checkbox" onchange="updateProgress()">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="component-type">Güç Kaynağı (PSU)</span></td>
+                    <td><span class="component-name">ASUS TUF Gaming 850W Gold ATX 3.0</span></td>
+                    <td>Dahili 16-pin (12VHPWR) kablosu ve askeri sınıf dayanıklılık.</td>
+                    <td class="status-col">
+                        <div class="checkbox-container">
+                            <input type="checkbox" class="custom-checkbox" onchange="updateProgress()">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="component-type">İşlemci Soğutucu</span></td>
+                    <td><span class="component-name">ASUS ROG / TUF 360mm Sıvı Soğutma</span></td>
+                    <td>Akvaryum kasa ile tam görsel uyum ve maksimum serinlik.</td>
+                    <td class="status-col">
+                        <div class="checkbox-container">
+                            <input type="checkbox" class="custom-checkbox" onchange="updateProgress()">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="component-type">Kasa (Case)</span></td>
+                    <td><span class="component-name">Strong Akvaryum Tipi Kasa</span></td>
+                    <td>Çift kamaralı tasarım, geniş hava akışı ve elindeki hazır boş kasa.</td>
+                    <td class="status-col">
+                        <div class="checkbox-container">
+                            <input type="checkbox" class="custom-checkbox" onchange="updateProgress()">
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </div>
+</div>
 
-    <script src="app.js"></script>
-    <script>
-        // Sayfa yüklendiğinde yerel hafızadan singleplayer rekorunu çekip gösterelim
-        document.addEventListener("DOMContentLoaded", () => {
-            const hiScore = localStorage.getItem("arcade_highscore") || "0";
-            document.getElementById("high-score-display").innerText = `En Yüksek Skor: ${hiScore} Kelime`;
+<script>
+    function updateProgress() {
+        const checkboxes = document.querySelectorAll('.custom-checkbox');
+        const total = checkboxes.length;
+        let checkedCount = 0;
+
+        checkboxes.forEach((cb, index) => {
+            const row = cb.closest('tr');
+            if (cb.checked) {
+                checkedCount++;
+                row.classList.add('completed');
+                localStorage.setItem('part_' + index, 'true');
+            } else {
+                row.classList.remove('completed');
+                localStorage.setItem('part_' + index, 'false');
+            }
         });
-    </script>
+
+        // Progress bar güncelleme
+        const percentage = Math.round((checkedCount / total) * 100);
+        document.getElementById('progress-fill').style.width = percentage + '%';
+        
+        if(checkedCount === total) {
+            document.getElementById('progress-text').innerText = 'SİSTEM TAMAMLANDI! 🎉';
+        } else {
+            document.getElementById('progress-text').innerText = checkedCount + ' / ' + total + ' Parça (%' + percentage + ')';
+        }
+    }
+
+    // Sayfa yüklendiğinde önceki durumları hatırla
+    window.onload = function() {
+        const checkboxes = document.querySelectorAll('.custom-checkbox');
+        checkboxes.forEach((cb, index) => {
+            const savedState = localStorage.getItem('part_' + index);
+            if (savedState === 'true') {
+                cb.checked = true;
+            }
+        });
+        updateProgress();
+    };
+</script>
+
 </body>
 </html>
