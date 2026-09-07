@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AM5 Monster PC Build Tracker</title>
+    <title>AM5 Monster PC Build & Budget Tracker</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -35,13 +35,13 @@
         }
 
         .container {
-            max-width: 900px;
+            max-width: 950px;
             margin: 0 auto;
         }
 
         header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         h1 {
@@ -51,7 +51,7 @@
             letter-spacing: 2px;
             color: #fff;
             text-shadow: 0 0 10px var(--accent-cyan), 0 0 20px var(--accent-cyan);
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
 
         .subtitle {
@@ -62,6 +62,42 @@
             text-transform: uppercase;
         }
 
+        /* Budget Summary Panel */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .summary-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .summary-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .summary-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+
+        .val-total { color: var(--accent-cyan); }
+        .val-spent { color: var(--success-color); }
+        .val-remaining { color: var(--accent-red); }
+
         /* Progress Card */
         .progress-card {
             background: var(--card-bg);
@@ -69,7 +105,7 @@
             backdrop-filter: blur(10px);
             border-radius: 12px;
             padding: 20px;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
 
@@ -77,24 +113,24 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             font-family: 'Orbitron', sans-serif;
         }
 
         .progress-title {
-            font-size: 1.1rem;
+            font-size: 1rem;
             color: var(--accent-cyan);
         }
 
         .progress-status {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: bold;
             color: var(--success-color);
         }
 
         .progress-bar-bg {
             width: 100%;
-            height: 14px;
+            height: 12px;
             background: rgba(255, 255, 255, 0.08);
             border-radius: 10px;
             overflow: hidden;
@@ -133,17 +169,17 @@
         }
 
         th {
-            padding: 16px;
-            font-size: 0.95rem;
+            padding: 14px;
+            font-size: 0.85rem;
             letter-spacing: 1px;
             color: var(--accent-cyan);
             text-transform: uppercase;
         }
 
         td {
-            padding: 16px;
+            padding: 14px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            font-size: 1.05rem;
+            font-size: 1rem;
             vertical-align: middle;
         }
 
@@ -177,8 +213,34 @@
 
         .component-name {
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             color: #fff;
+        }
+
+        /* Input Price Styling */
+        .price-input {
+            width: 100px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: #fff;
+            padding: 6px 8px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.95rem;
+            text-align: right;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .price-input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 8px var(--accent-cyan);
+        }
+
+        .currency-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-left: 4px;
         }
 
         /* Checkbox Styling */
@@ -189,8 +251,8 @@
         }
 
         .custom-checkbox {
-            width: 26px;
-            height: 26px;
+            width: 24px;
+            height: 24px;
             appearance: none;
             background: rgba(255, 255, 255, 0.05);
             border: 2px solid var(--accent-cyan);
@@ -211,7 +273,7 @@
             content: '✓';
             position: absolute;
             color: #000;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: bold;
             top: 50%;
             left: 50%;
@@ -221,7 +283,7 @@
         /* Responsive Mobile Layout */
         @media (max-width: 768px) {
             h1 { font-size: 1.6rem; }
-            .subtitle { font-size: 0.9rem; }
+            .subtitle { font-size: 0.85rem; }
             
             thead { display: none; }
             
@@ -233,8 +295,22 @@
             
             td {
                 display: block;
-                padding: 6px 0;
+                padding: 4px 0;
                 border: none;
+            }
+
+            td.price-col {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 6px;
+            }
+
+            td.price-col::before {
+                content: "Ort. Fiyat:";
+                font-family: 'Orbitron', sans-serif;
+                font-size: 0.85rem;
+                color: var(--accent-cyan);
             }
 
             td.status-col {
@@ -260,8 +336,24 @@
 <div class="container">
     <header>
         <h1>AM5 MONSTER BUILD</h1>
-        <div class="subtitle">Hayalindeki Sistem Adım Adım Tamamlanıyor</div>
+        <div class="subtitle">Bütçe & Parça Takip Paneli</div>
     </header>
+
+    <!-- Bütçe Özet Kartları -->
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="summary-title">Hedef Bütçe</div>
+            <div class="summary-value val-total" id="total-budget">0 ₺</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-title">Harcandımı (Alınan)</div>
+            <div class="summary-value val-spent" id="spent-budget">0 ₺</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-title">Kalan Bütçe</div>
+            <div class="summary-value val-remaining" id="remaining-budget">0 ₺</div>
+        </div>
+    </div>
 
     <!-- İlerleme Kartı -->
     <div class="progress-card">
@@ -279,70 +371,89 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 20%;">Bileşen</th>
-                    <th style="width: 30%;">Seçilen Model</th>
-                    <th style="width: 38%;">Öne Çıkan Özellikler</th>
-                    <th style="width: 12%; text-align: center;">Durum</th>
+                    <th style="width: 18%;">Bileşen</th>
+                    <th style="width: 28%;">Seçilen Model</th>
+                    <th style="width: 32%;">Öne Çıkan Özellikler</th>
+                    <th style="width: 12%;">Ort. Fiyat</th>
+                    <th style="width: 10%; text-align: center;">Durum</th>
                 </tr>
             </thead>
             <tbody id="parts-list">
                 <tr>
                     <td><span class="component-type">İşlemci (CPU)</span></td>
                     <td><span class="component-name">AMD Ryzen 7 7800X3D</span></td>
-                    <td>96 MB L3 3D V-Cache önbelleği ile saf oyun performansının zirvesi.</td>
+                    <td>96 MB L3 3D V-Cache önbelleği ile oyun performansının zirvesi.</td>
+                    <td class="price-col">
+                        <div><input type="number" class="price-input" value="13500" oninput="calculateBudget()"><span class="currency-label">₺</span></div>
+                    </td>
                     <td class="status-col">
                         <div class="checkbox-container">
-                            <input type="checkbox" class="custom-checkbox" onchange="updateProgress()">
+                            <input type="checkbox" class="custom-checkbox" onchange="calculateBudget()">
                         </div>
                     </td>
                 </tr>
                 <tr>
                     <td><span class="component-type">Ekran Kartı (GPU)</span></td>
                     <td><span class="component-name">NVIDIA RTX 4070 Ti Super 16GB</span></td>
-                    <td>16 GB VRAM, DLSS 3.5 ve Ray Tracing desteği ile 2K/4K yüksek performans.</td>
+                    <td>16 GB VRAM, DLSS 3.5 ve Ray Tracing ile 2K/4K devasa performans.</td>
+                    <td class="price-col">
+                        <div><input type="number" class="price-input" value="31000" oninput="calculateBudget()"><span class="currency-label">₺</span></div>
+                    </td>
                     <td class="status-col">
                         <div class="checkbox-container">
-                            <input type="checkbox" class="custom-checkbox" onchange="updateProgress()">
+                            <input type="checkbox" class="custom-checkbox" onchange="calculateBudget()">
                         </div>
                     </td>
                 </tr>
                 <tr>
                     <td><span class="component-type">Anakart</span></td>
-                    <td><span class="component-name">ASUS ROG STRIX B650E-F GAMING</span></td>
+                    <td><span class="component-name">ASUS ROG STRIX B650E-F</span></td>
                     <td>Güçlü VRM yapısı, PCIe 5.0 ekran kartı ve M.2 desteği.</td>
+                    <td class="price-col">
+                        <div><input type="number" class="price-input" value="8500" oninput="calculateBudget()"><span class="currency-label">₺</span></div>
+                    </td>
                     <td class="status-col">
                         <div class="checkbox-container">
-                            <input type="checkbox" class="custom-checkbox" onchange="updateProgress()">
+                            <input type="checkbox" class="custom-checkbox" onchange="calculateBudget()">
                         </div>
                     </td>
                 </tr>
                 <tr>
                     <td><span class="component-type">Bellek (RAM)</span></td>
                     <td><span class="component-name">32 GB (2x16) DDR5 6000MHz CL30</span></td>
-                    <td>AM5 mimarisi için en ideal hız, EXPO desteği ve düşük gecikme.</td>
+                    <td>AM5 mimarisi için ideal hız, EXPO ve düşük gecikme.</td>
+                    <td class="price-col">
+                        <div><input type="number" class="price-input" value="4200" oninput="calculateBudget()"><span class="currency-label">₺</span></div>
+                    </td>
                     <td class="status-col">
                         <div class="checkbox-container">
-                            <input type="checkbox" class="custom-checkbox" onchange="updateProgress()">
+                            <input type="checkbox" class="custom-checkbox" onchange="calculateBudget()">
                         </div>
                     </td>
                 </tr>
                 <tr>
                     <td><span class="component-type">Depolama (SSD)</span></td>
                     <td><span class="component-name">1 TB PCIe 5.0 M.2 NVMe SSD</span></td>
-                    <td>10.000+ MB/s okuma hızı ile ultra hızlı veri aktarımı ve yükleme.</td>
+                    <td>10.000+ MB/s okuma hızı ile ultra hızlı veri aktarımı.</td>
+                    <td class="price-col">
+                        <div><input type="number" class="price-input" value="5500" oninput="calculateBudget()"><span class="currency-label">₺</span></div>
+                    </td>
                     <td class="status-col">
                         <div class="checkbox-container">
-                            <input type="checkbox" class="custom-checkbox" onchange="updateProgress()">
+                            <input type="checkbox" class="custom-checkbox" onchange="calculateBudget()">
                         </div>
                     </td>
                 </tr>
                 <tr>
                     <td><span class="component-type">Güç Kaynağı (PSU)</span></td>
-                    <td><span class="component-name">ASUS TUF Gaming 850W Gold ATX 3.0</span></td>
+                    <td><span class="component-name">ASUS TUF 850W Gold ATX 3.0</span></td>
                     <td>Dahili 16-pin (12VHPWR) kablosu ve askeri sınıf dayanıklılık.</td>
+                    <td class="price-col">
+                        <div><input type="number" class="price-input" value="4800" oninput="calculateBudget()"><span class="currency-label">₺</span></div>
+                    </td>
                     <td class="status-col">
                         <div class="checkbox-container">
-                            <input type="checkbox" class="custom-checkbox" onchange="updateProgress()">
+                            <input type="checkbox" class="custom-checkbox" onchange="calculateBudget()">
                         </div>
                     </td>
                 </tr>
@@ -350,19 +461,25 @@
                     <td><span class="component-type">İşlemci Soğutucu</span></td>
                     <td><span class="component-name">ASUS ROG / TUF 360mm Sıvı Soğutma</span></td>
                     <td>Akvaryum kasa ile tam görsel uyum ve maksimum serinlik.</td>
+                    <td class="price-col">
+                        <div><input type="number" class="price-input" value="4500" oninput="calculateBudget()"><span class="currency-label">₺</span></div>
+                    </td>
                     <td class="status-col">
                         <div class="checkbox-container">
-                            <input type="checkbox" class="custom-checkbox" onchange="updateProgress()">
+                            <input type="checkbox" class="custom-checkbox" onchange="calculateBudget()">
                         </div>
                     </td>
                 </tr>
                 <tr>
                     <td><span class="component-type">Kasa (Case)</span></td>
                     <td><span class="component-name">Strong Akvaryum Tipi Kasa</span></td>
-                    <td>Çift kamaralı tasarım, geniş hava akışı ve elindeki hazır boş kasa.</td>
+                    <td>Çift kamaralı tasarım, geniş hava akışı ve hazır boş kasa.</td>
+                    <td class="price-col">
+                        <div><input type="number" class="price-input" value="0" oninput="calculateBudget()"><span class="currency-label">₺</span></div>
+                    </td>
                     <td class="status-col">
                         <div class="checkbox-container">
-                            <input type="checkbox" class="custom-checkbox" onchange="updateProgress()">
+                            <input type="checkbox" class="custom-checkbox" onchange="calculateBudget()">
                         </div>
                     </td>
                 </tr>
@@ -372,14 +489,25 @@
 </div>
 
 <script>
-    function updateProgress() {
-        const checkboxes = document.querySelectorAll('.custom-checkbox');
-        const total = checkboxes.length;
+    function calculateBudget() {
+        const rows = document.querySelectorAll('#parts-list tr');
+        let totalBudget = 0;
+        let spentBudget = 0;
         let checkedCount = 0;
+        const totalParts = rows.length;
 
-        checkboxes.forEach((cb, index) => {
-            const row = cb.closest('tr');
-            if (cb.checked) {
+        rows.forEach((row, index) => {
+            const priceInput = row.querySelector('.price-input');
+            const checkbox = row.querySelector('.custom-checkbox');
+            const price = parseFloat(priceInput.value) || 0;
+
+            // Fiyatı kaydet
+            localStorage.setItem('price_' + index, price);
+
+            totalBudget += price;
+
+            if (checkbox.checked) {
+                spentBudget += price;
                 checkedCount++;
                 row.classList.add('completed');
                 localStorage.setItem('part_' + index, 'true');
@@ -389,27 +517,42 @@
             }
         });
 
-        // Progress bar güncelleme
-        const percentage = Math.round((checkedCount / total) * 100);
+        const remainingBudget = totalBudget - spentBudget;
+
+        // Bütçe kartlarını güncelle
+        document.getElementById('total-budget').innerText = totalBudget.toLocaleString('tr-TR') + ' ₺';
+        document.getElementById('spent-budget').innerText = spentBudget.toLocaleString('tr-TR') + ' ₺';
+        document.getElementById('remaining-budget').innerText = remainingBudget.toLocaleString('tr-TR') + ' ₺';
+
+        // İlerleme çubuğunu güncelle
+        const percentage = Math.round((checkedCount / totalParts) * 100);
         document.getElementById('progress-fill').style.width = percentage + '%';
-        
-        if(checkedCount === total) {
+
+        if (checkedCount === totalParts) {
             document.getElementById('progress-text').innerText = 'SİSTEM TAMAMLANDI! 🎉';
         } else {
-            document.getElementById('progress-text').innerText = checkedCount + ' / ' + total + ' Parça (%' + percentage + ')';
+            document.getElementById('progress-text').innerText = checkedCount + ' / ' + totalParts + ' Parça (%' + percentage + ')';
         }
     }
 
-    // Sayfa yüklendiğinde önceki durumları hatırla
+    // Sayfa yüklendiğinde hafızadaki verileri getir
     window.onload = function() {
-        const checkboxes = document.querySelectorAll('.custom-checkbox');
-        checkboxes.forEach((cb, index) => {
+        const rows = document.querySelectorAll('#parts-list tr');
+        rows.forEach((row, index) => {
+            const priceInput = row.querySelector('.price-input');
+            const checkbox = row.querySelector('.custom-checkbox');
+
+            const savedPrice = localStorage.getItem('price_' + index);
+            if (savedPrice !== null) {
+                priceInput.value = savedPrice;
+            }
+
             const savedState = localStorage.getItem('part_' + index);
             if (savedState === 'true') {
-                cb.checked = true;
+                checkbox.checked = true;
             }
         });
-        updateProgress();
+        calculateBudget();
     };
 </script>
 
