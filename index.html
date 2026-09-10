@@ -151,6 +151,7 @@
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            margin-bottom: 20px;
         }
 
         table {
@@ -196,7 +197,7 @@
             color: var(--text-muted);
         }
 
-        tr.completed td.component-name {
+        tr.completed td.component-name-cell {
             text-decoration: line-through;
             color: var(--success-color);
         }
@@ -213,21 +214,26 @@
             color: #fff;
         }
 
-        .price-input {
-            width: 100px;
+        .text-input, .price-input {
             background: rgba(0, 0, 0, 0.4);
             border: 1px solid var(--border-color);
             border-radius: 6px;
             color: #fff;
             padding: 6px 8px;
-            font-family: 'Orbitron', sans-serif;
+            font-family: 'Rajdhani', sans-serif;
             font-size: 0.95rem;
-            text-align: right;
             outline: none;
             transition: all 0.2s;
+            width: 100%;
         }
 
-        .price-input:focus {
+        .price-input {
+            width: 90px;
+            font-family: 'Orbitron', sans-serif;
+            text-align: right;
+        }
+
+        .text-input:focus, .price-input:focus {
             border-color: var(--accent-cyan);
             box-shadow: 0 0 8px var(--accent-cyan);
         }
@@ -272,6 +278,45 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+        }
+
+        .btn-action {
+            background: transparent;
+            border: 1px solid var(--accent-red);
+            color: var(--accent-red);
+            padding: 4px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover {
+            background: var(--accent-red);
+            color: #fff;
+            box-shadow: 0 0 8px var(--accent-red);
+        }
+
+        .btn-add {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px dashed var(--accent-cyan);
+            color: var(--accent-cyan);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.95rem;
+            border-radius: 12px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+        }
+
+        .btn-add:hover {
+            background: rgba(0, 240, 255, 0.25);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
         }
 
         @media (max-width: 768px) {
@@ -349,7 +394,7 @@
     <div class="progress-card">
         <div class="progress-header">
             <span class="progress-title">SİSTEM İLERLEMESİ</span>
-            <span class="progress-status" id="progress-text">0 / 8 Parça</span>
+            <span class="progress-status" id="progress-text">0 / 0 Parça</span>
         </div>
         <div class="progress-bar-bg">
             <div class="progress-bar-fill" id="progress-fill"></div>
@@ -361,146 +406,60 @@
             <thead>
                 <tr>
                     <th style="width: 18%;">Bileşen</th>
-                    <th style="width: 28%;">Seçilen Model</th>
+                    <th style="width: 26%;">Seçilen Model</th>
                     <th style="width: 32%;">Öne Çıkan Özellikler</th>
                     <th style="width: 12%;">Ort. Fiyat</th>
-                    <th style="width: 10%; text-align: center;">Durum</th>
+                    <th style="width: 7%; text-align: center;">Durum</th>
+                    <th style="width: 5%; text-align: center;">İşlem</th>
                 </tr>
             </thead>
             <tbody id="parts-list">
-                <tr>
-                    <td><span class="component-type">İşlemci (CPU)</span></td>
-                    <td><span class="component-name">AMD Ryzen 7 7800X3D</span></td>
-                    <td>96 MB L3 3D V-Cache önbelleği ile oyun performansının zirvesi.</td>
-                    <td class="price-col">
-                        <div><input type="number" class="price-input" value="13500" oninput="calculateBudget()"><span class="currency-label">₺</span></div>
-                    </td>
-                    <td class="status-col">
-                        <div class="checkbox-container">
-                            <input type="checkbox" class="custom-checkbox" onchange="calculateBudget()">
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td><span class="component-type">Ekran Kartı (GPU)</span></td>
-                    <td><span class="component-name">NVIDIA RTX 4070 Ti Super 16GB</span></td>
-                    <td>16 GB VRAM, DLSS 3.5 ve Ray Tracing ile 2K/4K devasa performans.</td>
-                    <td class="price-col">
-                        <div><input type="number" class="price-input" value="31000" oninput="calculateBudget()"><span class="currency-label">₺</span></div>
-                    </td>
-                    <td class="status-col">
-                        <div class="checkbox-container">
-                            <input type="checkbox" class="custom-checkbox" onchange="calculateBudget()">
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td><span class="component-type">Anakart</span></td>
-                    <td><span class="component-name">ASUS TUF GAMING B650-PLUS WIFI</span></td>
-                    <td>Askeri sınıf bileşenler, güçlü VRM soğutması ve yüksek F/P oranı.</td>
-                    <td class="price-col">
-                        <div><input type="number" class="price-input" value="6500" oninput="calculateBudget()"><span class="currency-label">₺</span></div>
-                    </td>
-                    <td class="status-col">
-                        <div class="checkbox-container">
-                            <input type="checkbox" class="custom-checkbox" onchange="calculateBudget()">
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td><span class="component-type">Bellek (RAM)</span></td>
-                    <td><span class="component-name">32 GB (2x16) DDR5 6000MHz CL30</span></td>
-                    <td>AM5 mimarisi için ideal hız, EXPO ve düşük gecikme.</td>
-                    <td class="price-col">
-                        <div><input type="number" class="price-input" value="4200" oninput="calculateBudget()"><span class="currency-label">₺</span></div>
-                    </td>
-                    <td class="status-col">
-                        <div class="checkbox-container">
-                            <input type="checkbox" class="custom-checkbox" onchange="calculateBudget()">
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td><span class="component-type">Depolama (SSD)</span></td>
-                    <td><span class="component-name">1 TB PCIe 5.0 M.2 NVMe SSD</span></td>
-                    <td>10.000+ MB/s okuma hızı ile ultra hızlı veri aktarımı.</td>
-                    <td class="price-col">
-                        <div><input type="number" class="price-input" value="5500" oninput="calculateBudget()"><span class="currency-label">₺</span></div>
-                    </td>
-                    <td class="status-col">
-                        <div class="checkbox-container">
-                            <input type="checkbox" class="custom-checkbox" onchange="calculateBudget()">
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td><span class="component-type">Güç Kaynağı (PSU)</span></td>
-                    <td><span class="component-name">ASUS TUF 850W Gold ATX 3.0</span></td>
-                    <td>Dahili 16-pin (12VHPWR) kablosu ve askeri sınıf dayanıklılık.</td>
-                    <td class="price-col">
-                        <div><input type="number" class="price-input" value="4800" oninput="calculateBudget()"><span class="currency-label">₺</span></div>
-                    </td>
-                    <td class="status-col">
-                        <div class="checkbox-container">
-                            <input type="checkbox" class="custom-checkbox" onchange="calculateBudget()">
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td><span class="component-type">İşlemci Soğutucu</span></td>
-                    <td><span class="component-name">ASUS ROG / TUF 360mm Sıvı Soğutma</span></td>
-                    <td>Akvaryum kasa ile tam görsel uyum ve maksimum serinlik.</td>
-                    <td class="price-col">
-                        <div><input type="number" class="price-input" value="4500" oninput="calculateBudget()"><span class="currency-label">₺</span></div>
-                    </td>
-                    <td class="status-col">
-                        <div class="checkbox-container">
-                            <input type="checkbox" class="custom-checkbox" onchange="calculateBudget()">
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td><span class="component-type">Kasa (Case)</span></td>
-                    <td><span class="component-name">Strong Akvaryum Tipi Kasa</span></td>
-                    <td>Çift kamaralı tasarım, geniş hava akışı ve hazır boş kasa.</td>
-                    <td class="price-col">
-                        <div><input type="number" class="price-input" value="0" oninput="calculateBudget()"><span class="currency-label">₺</span></div>
-                    </td>
-                    <td class="status-col">
-                        <div class="checkbox-container">
-                            <input type="checkbox" class="custom-checkbox" onchange="calculateBudget()">
-                        </div>
-                    </td>
-                </tr>
+                <!-- JavaScript tarafından dinamik doldurulacak -->
             </tbody>
         </table>
     </div>
+
+    <button class="btn-add" onclick="addNewPart()">+ Yeni Bileşen Ekle</button>
 </div>
 
 <script>
-    function calculateBudget() {
-        const rows = document.querySelectorAll('#parts-list tr');
+    // VARSAYILAN PARÇA LİSTESİ (İstediğin gibi buradan veya arayüzden güncelleyebilirsin)
+    const defaultBuild = [
+        { type: "İşlemci (CPU)", name: "AMD Ryzen 5 (AM5 Soket)", desc: "96 MB L3 3D V-Cache önbellek ile maksimum oyun performansı ve düşük güç tüketimi.", price: 7800, completed: false },
+        { type: "Anakart", name: "MSI PRO B850M-P WIFI", desc: "B850 Çipset, PCIe 5.0 x16, Wi-Fi 7, 5G LAN ve 3x M.2 Yuvası.", price: 6200, completed: false },
+        { type: "Ekran Kartı (GPU)", name: "NVIDIA RTX 4070 Super 12GB", desc: "12 GB VRAM, DLSS 3.5 ve Ray Tracing ile yüksek 1440p performansı.", price: 26500, completed: false },
+        { type: "Bellek (RAM)", name: "32 GB (2x16) DDR5 6000MHz CL30", desc: "AM5 mimarisi için tatlı nokta (Sweet Spot), EXPO destekli.", price: 4200, completed: false },
+        { type: "Depolama (SSD)", name: "1 TB PCIe 4.0 NVMe M.2 SSD", desc: "5000+ MB/s okuma hızı, yüksek F/P ve hızlı açılış süreleri.", price: 3200, completed: false },
+        { type: "Güç Kaynağı (PSU)", name: "750W 80+ Gold Modüler PSU", desc: "ATX 3.0 ve PCIe 5.0 uyumu ile yeni nesil kartlara tam destek.", price: 4100, completed: false },
+        { type: "İşlemci Soğutucu", name: "Thermalright Peerless / Phantom Spirit", desc: "Çift kule tipi performanslı hava soğutma, buz gibi sıcaklıklar.", price: 1800, completed: false },
+        { type: "Kasa (Case)", name: "Mevcut Boş Kasa", desc: "Eldeki kasa kullanılacak (Bütçeye 0 ₺ olarak eklendi).", price: 0, completed: false }
+    ];
+
+    let parts = [];
+
+    function init() {
+        const savedData = localStorage.getItem('am5_build_dynamic_v1');
+        if (savedData) {
+            parts = JSON.parse(savedData);
+        } else {
+            parts = JSON.parse(JSON.stringify(defaultBuild));
+        }
+        renderTable();
+    }
+
+    function saveAndCalculate() {
+        localStorage.setItem('am5_build_dynamic_v1', JSON.stringify(parts));
+
         let totalBudget = 0;
         let spentBudget = 0;
         let checkedCount = 0;
-        const totalParts = rows.length;
 
-        rows.forEach((row, index) => {
-            const priceInput = row.querySelector('.price-input');
-            const checkbox = row.querySelector('.custom-checkbox');
-            const price = parseFloat(priceInput.value) || 0;
-
-            localStorage.setItem('price_' + index, price);
+        parts.forEach(item => {
+            const price = parseFloat(item.price) || 0;
             totalBudget += price;
-
-            if (checkbox.checked) {
+            if (item.completed) {
                 spentBudget += price;
                 checkedCount++;
-                row.classList.add('completed');
-                localStorage.setItem('part_' + index, 'true');
-            } else {
-                row.classList.remove('completed');
-                localStorage.setItem('part_' + index, 'false');
             }
         });
 
@@ -510,34 +469,82 @@
         document.getElementById('spent-budget').innerText = spentBudget.toLocaleString('tr-TR') + ' ₺';
         document.getElementById('remaining-budget').innerText = remainingBudget.toLocaleString('tr-TR') + ' ₺';
 
-        const percentage = Math.round((checkedCount / totalParts) * 100);
+        const totalParts = parts.length;
+        const percentage = totalParts > 0 ? Math.round((checkedCount / totalParts) * 100) : 0;
         document.getElementById('progress-fill').style.width = percentage + '%';
 
-        if (checkedCount === totalParts) {
+        if (totalParts > 0 && checkedCount === totalParts) {
             document.getElementById('progress-text').innerText = 'SİSTEM TAMAMLANDI! 🎉';
         } else {
             document.getElementById('progress-text').innerText = checkedCount + ' / ' + totalParts + ' Parça (%' + percentage + ')';
         }
     }
 
-    window.onload = function() {
-        const rows = document.querySelectorAll('#parts-list tr');
-        rows.forEach((row, index) => {
-            const priceInput = row.querySelector('.price-input');
-            const checkbox = row.querySelector('.custom-checkbox');
+    function renderTable() {
+        const tbody = document.getElementById('parts-list');
+        tbody.innerHTML = '';
 
-            const savedPrice = localStorage.getItem('price_' + index);
-            if (savedPrice !== null) {
-                priceInput.value = savedPrice;
-            }
+        parts.forEach((item, index) => {
+            const tr = document.createElement('tr');
+            if (item.completed) tr.classList.add('completed');
 
-            const savedState = localStorage.getItem('part_' + index);
-            if (savedState === 'true') {
-                checkbox.checked = true;
-            }
+            tr.innerHTML = `
+                <td><input type="text" class="text-input" value="${item.type}" onchange="updateItem(${index}, 'type', this.value)"></td>
+                <td class="component-name-cell"><input type="text" class="text-input" value="${item.name}" onchange="updateItem(${index}, 'name', this.value)"></td>
+                <td><input type="text" class="text-input" value="${item.desc}" onchange="updateItem(${index}, 'desc', this.value)"></td>
+                <td class="price-col">
+                    <div style="display: flex; align-items: center;">
+                        <input type="number" class="price-input" value="${item.price}" oninput="updateItem(${index}, 'price', this.value)">
+                        <span class="currency-label">₺</span>
+                    </div>
+                </td>
+                <td class="status-col">
+                    <div class="checkbox-container">
+                        <input type="checkbox" class="custom-checkbox" ${item.completed ? 'checked' : ''} onchange="toggleComplete(${index}, this.checked)">
+                    </div>
+                </td>
+                <td style="text-align: center;">
+                    <button class="btn-action" onclick="deletePart(${index})">X</button>
+                </td>
+            `;
+
+            tbody.appendChild(tr);
         });
-        calculateBudget();
-    };
+
+        saveAndCalculate();
+    }
+
+    function updateItem(index, key, value) {
+        if (key === 'price') {
+            parts[index][key] = parseFloat(value) || 0;
+        } else {
+            parts[index][key] = value;
+        }
+        saveAndCalculate();
+    }
+
+    function toggleComplete(index, isChecked) {
+        parts[index].completed = isChecked;
+        renderTable();
+    }
+
+    function addNewPart() {
+        parts.push({
+            type: "Yeni Parça",
+            name: "Bileşen Adı",
+            desc: "Bileşen açıklaması",
+            price: 0,
+            completed: false
+        });
+        renderTable();
+    }
+
+    function deletePart(index) {
+        parts.splice(index, 1);
+        renderTable();
+    }
+
+    window.onload = init;
 </script>
 
 </body>
