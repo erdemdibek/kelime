@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Doğalgaz Fatura Hesaplayıcı</title>
+    <title>GAZDAŞ Fatura Hesaplayıcı</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-4">
@@ -12,19 +12,19 @@
         <!-- Başlık -->
         <div class="text-center space-y-1">
             <h1 class="text-xl font-bold tracking-tight text-white">GAZDAŞ Fatura Hesaplayıcı</h1>
-            <p class="text-xs text-slate-400">Trakya Bölgesi Konut Tarifesi</p>
+            <p class="text-xs text-slate-400">Trakya Bölgesi Konut Tarifesi (Lüleburgaz)</p>
         </div>
 
         <!-- Form Alanı -->
         <div class="space-y-4">
             <div>
                 <label class="block text-xs font-medium text-slate-300 mb-1">Önceki Fatura Endeksi (m³)</label>
-                <input type="number" id="baslangicEndeks" value="4683" oninput="hesapla()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 text-lg">
+                <input type="number" id="baslangicEndeks" value="4659" oninput="hesapla()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 text-lg">
             </div>
 
             <div>
                 <label class="block text-xs font-medium text-slate-300 mb-1">Şu Anki Sayaç Endeksi (m³)</label>
-                <input type="number" id="guncelEndeks" value="4740" oninput="hesapla()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 text-lg">
+                <input type="number" id="guncelEndeks" value="4683" oninput="hesapla()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 text-lg">
             </div>
         </div>
 
@@ -35,11 +35,11 @@
                 <span id="tuketimMiktari" class="font-semibold text-white">0 m³</span>
             </div>
             <div class="flex justify-between items-center text-sm">
-                <span class="text-slate-400">Devlet Desteği:</span>
+                <span class="text-slate-400">Devlet Desteği Düşülen:</span>
                 <span id="devletDestegi" class="font-semibold text-emerald-400">0 TL</span>
             </div>
             <div class="border-t border-slate-800 pt-3 flex justify-between items-center">
-                <span class="text-base font-bold text-white">Ödenecek Tutar:</span>
+                <span class="text-base font-bold text-white">Ödenecek Net Tutar:</span>
                 <span id="odenecekTutar" class="text-2xl font-black text-blue-400">0 TL</span>
             </div>
         </div>
@@ -54,21 +54,24 @@
             const tuketim = Math.max(0, guncel - baslangic);
             document.getElementById('tuketimMiktari').innerText = tuketim.toFixed(2) + " m³";
 
-            const katsayi = 0.98665;
-            const kdvDahilBirimFiyat = 16.908506; 
+            // Faturadaki gerçek 1 m3 başına düşen katsayılar ve fiyatlar:
+            // 24 m3 kullanımda desteksiz fatura toplamı: 970.74 TL (KDV dahil)
+            // m3 başına desteksiz birim maliyet = 970.74 / 24 = 40.4475 TL/m3
+            // m3 başına devlet desteği = 340.08 / 24 = 14.17 TL/m3
+            // Net ödenen m3 birim fiyatı = 630.66 / 24 = 26.2775 TL/m3
 
-            const sm3Tuketim = tuketim * katsayi;
-            const hamTutar = sm3Tuketim * kdvDahilBirimFiyat;
+            const desteksizBirimFiyat = 40.4475;
+            const destekBirimFiyat = 14.17;
 
-            const destekOrani = 340.08 / 970.74; 
-            const devletDestegiTutar = hamTutar * destekOrani;
+            const hamTutar = tuketim * desteksizBirimFiyat;
+            const devletDestegiTutar = tuketim * destekBirimFiyat;
             const netTutar = hamTutar - devletDestegiTutar;
 
             document.getElementById('devletDestegi').innerText = "-" + devletDestegiTutar.toFixed(2) + " TL";
             document.getElementById('odenecekTutar').innerText = netTutar.toFixed(2) + " TL";
         }
 
-        // Sayfa açıldığında ilk hesaplamayı yap
+        // Sayfa yüklendiğinde hesaplamayı tetikle
         hesapla();
     </script>
 </body>
