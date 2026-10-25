@@ -10,24 +10,18 @@
   body { margin:0; background:var(--bg); color:var(--txt); font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; display:flex; justify-content:center; padding:16px; }
   .wrap { width:100%; max-width:440px; display:flex; flex-direction:column; gap:14px; }
   .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px; }
-  h1 { font-size:20px; margin:0 0 10px; }
-  label { display:block; font-size:12px; color:var(--mut); margin:12px 0 4px; }
-  input, select { width:100%; background:var(--bg); color:var(--txt); border:1px solid #374151; border-radius:12px; padding:12px 14px; font-size:16px; }
-  input:focus, select:focus { outline:none; border-color:var(--acc); }
-  .big { font-size:30px; font-weight:700; text-align:center; padding:14px; }
-  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .hint { font-size:11px; color:var(--mut); margin-top:6px; line-height:1.5; }
-  .line { display:flex; justify-content:space-between; gap:8px; padding:7px 0; font-size:14px; border-bottom:1px dashed var(--line); }
+  h1 { font-size:20px; margin:0 0 6px; }
+  label { display:block; font-size:12px; color:var(--mut); margin:14px 0 4px; }
+  input { width:100%; background:var(--bg); color:var(--txt); border:1px solid #374151; border-radius:12px; padding:14px; font-size:26px; font-weight:700; text-align:center; }
+  input:focus { outline:none; border-color:var(--acc); }
+  .line { display:flex; justify-content:space-between; gap:8px; padding:8px 0; font-size:14px; border-bottom:1px dashed var(--line); }
   .line span:first-child { color:var(--mut); }
-  .line.s { font-size:12px; padding-left:10px; }
-  .total { display:flex; justify-content:space-between; align-items:baseline; padding-top:12px; }
-  .total .amt { font-size:30px; font-weight:800; color:var(--acc); }
+  .total { text-align:center; padding:6px 0 2px; }
+  .total small { display:block; font-size:12px; color:var(--mut); }
+  .total .amt { font-size:38px; font-weight:800; color:var(--acc); }
+  .hint { font-size:12px; color:var(--mut); line-height:1.5; margin-top:8px; }
   .warn { color:var(--warn); }
-  button { background:#1d4ed8; color:#fff; border:0; border-radius:12px; padding:11px 14px; font-size:14px; cursor:pointer; }
-  button.g { background:#1f2937; color:var(--txt); }
-  .btns { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
   .note { font-size:11px; color:var(--mut); line-height:1.5; text-align:center; }
-  details summary { cursor:pointer; font-size:14px; color:var(--mut); }
 </style>
 </head>
 <body>
@@ -35,169 +29,74 @@
 
   <div class="card">
     <h1>Doğalgaz Tahmini</h1>
-    <select id="profil"></select>
-
-    <label>Sayaçta şu an gördüğün değer (m³)</label>
-    <input type="number" id="guncel" class="big" inputmode="decimal" step="any" placeholder="örn. 4690">
+    <label>Son faturadaki endeks (m³)</label>
+    <input type="number" id="onceki" inputmode="decimal" step="any" placeholder="örn. 7452">
+    <label>Şu an sayaçta gördüğün (m³)</label>
+    <input type="number" id="guncel" inputmode="decimal" step="any" placeholder="örn. 7470">
   </div>
 
   <div class="card" id="sonuc"></div>
-
-  <div class="card">
-    <details>
-      <summary>Sayaç ve hesap ayarları</summary>
-      <label>Sayaç adı</label>
-      <input type="text" id="ad">
-      <div class="row2">
-        <div>
-          <label>Son fatura endeksi (m³)</label>
-          <input type="number" id="sonEndeks" inputmode="decimal" step="any">
-        </div>
-        <div>
-          <label>Son fatura okuma tarihi</label>
-          <input type="date" id="sonTarih">
-        </div>
-      </div>
-      <label>İl</label>
-      <select id="il"></select>
-      <label>Yıllık tüketim aralığı</label>
-      <select id="aralik"></select>
-      <label>Basınç düzeltme katsayısı</label>
-      <input type="number" id="katsayi" inputmode="decimal" step="0.0001">
-      <div class="hint">Faturadaki "Düzeltilmiş hacim ÷ Okunan hacim". Elindeki iki faturada 1,0336 ve 1,0215 çıktı; mevsime göre değişiyor. Bilmiyorsan 1,03 kalsın.</div>
-      <label>Hesap tarihi</label>
-      <input type="date" id="bugun">
-      <div class="btns">
-        <button id="faturaGeldi">Fatura geldi, yeni dönem başlat</button>
-        <button id="ekle" class="g">Sayaç ekle</button>
-        <button id="sil" class="g">Bu sayacı sil</button>
-      </div>
-    </details>
-  </div>
 
   <p class="note">Bu uygulama resmi değildir, hiçbir dağıtım şirketiyle bağlantısı yoktur. Sonuçlar tahminidir; kesin tutar için faturanıza bakın.</p>
 </div>
 
 <script>
-/* ---- TARİFE VERİSİ (gerçek uygulamada uzaktan güncellenen JSON olmalı) ----
-   Fiyatlar KDV dahil, TL/Sm3. */
+/* Tarife (KDV dahil, TL/Sm3). Değişirse sadece burayı güncelle. */
 const TARIFE = {
   guncelleme: "2026-10-25",
-  isilDeger: 10.64,                 // kWh / Sm3 (iki faturada da 10,64)
-  tarifeBaslangic: "2026-10-01",    // kademeli tarifenin başladığı tarih (faturalardan çıkarım)
-  eskiFiyat: 25.687,                // 1 Ekim öncesi tek fiyat, TL/Sm3 (faturalardan çıkarım)
-  iller: {
-    "Kırklareli": { gunlukLimit: 1.29 },
-    "Edirne":     { gunlukLimit: 1.35 },
-    "Tekirdağ":   { gunlukLimit: 1.13 }
-  },
-  araliklar: {
-    "0 - 100 m³":        { k1: 16.908506, k2: 25.758506 },
-    "100 - 1.000 m³":    { k1: 14.314430, k2: 23.164430 },
-    "1.000 - 10.000 m³": { k1: 13.490753, k2: 22.340753 }
-  }
+  isilDeger: 10.64,     // kWh / Sm3
+  katsayi: 1.02,        // m3 -> Sm3 (faturalarda 1,012 - 1,034 arası çıktı)
+  aylikLimit: 39.88,    // Kırklareli aylık Kademe-1 limiti (Sm3)
+  k1: 16.908506,        // Kademe-1 fiyatı
+  k2: 25.758506         // Kademe-2 (limit üstü) fiyatı
 };
 
-const gun = s => { const [y, m, d] = s.split('-').map(Number); return Date.UTC(y, m - 1, d) / 86400000; };
+const $ = id => document.getElementById(id);
+const tl = n => n.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " TL";
+const nm = (n, d = 1) => n.toLocaleString('tr-TR', { minimumFractionDigits: d, maximumFractionDigits: d });
 
-/* p: {il, aralik, sonEndeks, sonTarih, katsayi}  endeks: sayaçtaki değer  bugun: 'YYYY-MM-DD' */
-function hesapla(p, endeks, bugun) {
-  const T = TARIFE, f = T.araliklar[p.aralik];
-  const m3 = Math.max(0, endeks - p.sonEndeks);
-  const D = Math.max(1, gun(bugun) - gun(p.sonTarih));
-  const eski = Math.min(D, Math.max(0, gun(T.tarifeBaslangic) - gun(p.sonTarih)));
-  const yeni = D - eski;
-  const sm3 = m3 * p.katsayi;
-  const sm3Eski = sm3 * eski / D;
-  const sm3Yeni = sm3 - sm3Eski;
-  const limit = T.iller[p.il].gunlukLimit * yeni;
-  const k1 = Math.min(sm3Yeni, limit);
-  const k2 = sm3Yeni - k1;
-  const tEski = sm3Eski * T.eskiFiyat, t1 = k1 * f.k1, t2 = k2 * f.k2;
-  const toplam = tEski + t1 + t2;
-  return { m3, D, eski, yeni, sm3, kwh: sm3 * T.isilDeger, sm3Eski, k1, k2, limit,
-           kalan: Math.max(0, limit - sm3Yeni), tEski, t1, t2, toplam, yuvarlak: Math.round(toplam) };
+function hesapla(onceki, guncel) {
+  const m3 = Math.max(0, guncel - onceki);
+  const sm3 = m3 * TARIFE.katsayi;
+  const k1Sm3 = Math.min(sm3, TARIFE.aylikLimit);
+  const k2Sm3 = sm3 - k1Sm3;
+  const t1 = k1Sm3 * TARIFE.k1, t2 = k2Sm3 * TARIFE.k2;
+  return { m3, sm3, kwh: sm3 * TARIFE.isilDeger, t1, t2, toplam: t1 + t2,
+           kalanM3: Math.max(0, TARIFE.aylikLimit - sm3) / TARIFE.katsayi };
 }
 
-if (typeof document !== 'undefined') {
-  const $ = id => document.getElementById(id);
-  const tl = n => n.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " TL";
-  const nm = (n, d = 2) => n.toLocaleString('tr-TR', { minimumFractionDigits: d, maximumFractionDigits: d });
-  const bugunStr = () => { const d = new Date(); const z = n => String(n).padStart(2, '0'); return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`; };
+function goster() {
+  const onceki = parseFloat($('onceki').value);
+  const guncel = parseFloat($('guncel').value);
+  try { localStorage.setItem('gaz2', JSON.stringify({ o: $('onceki').value, g: $('guncel').value })); } catch (e) {}
 
-  const varsayilan = () => ({ aktif: 0, profiller: [
-    { ad: "Sayaç 1", il: "Kırklareli", aralik: "0 - 100 m³", sonEndeks: 7452, sonTarih: "2026-10-20", katsayi: 1.03, guncel: "" },
-    { ad: "Sayaç 2", il: "Kırklareli", aralik: "0 - 100 m³", sonEndeks: 4683, sonTarih: "2026-10-01", katsayi: 1.03, guncel: "" }
-  ]});
-  let state;
-  try { state = JSON.parse(localStorage.getItem('gazState') || 'null'); } catch (e) { state = null; }
-  if (!state || !state.profiller || !state.profiller.length) state = varsayilan();
-  const kaydet = () => { try { localStorage.setItem('gazState', JSON.stringify(state)); } catch (e) {} };
-  const P = () => state.profiller[state.aktif];
-
-  $('il').innerHTML = Object.keys(TARIFE.iller).map(i => `<option>${i}</option>`).join('');
-  $('aralik').innerHTML = Object.keys(TARIFE.araliklar).map(a => `<option>${a}</option>`).join('');
-  $('bugun').value = bugunStr();
-
-  function profilListesi() {
-    $('profil').innerHTML = state.profiller.map((p, i) => `<option value="${i}">${p.ad}</option>`).join('');
-    $('profil').value = state.aktif;
+  if (isNaN(onceki) || isNaN(guncel)) {
+    $('sonuc').innerHTML = `<div class="hint">İki endeksi girince sonuç burada görünür.</div>`;
+    return;
   }
-  function formuDoldur() {
-    const p = P();
-    $('ad').value = p.ad; $('il').value = p.il; $('aralik').value = p.aralik;
-    $('sonEndeks').value = p.sonEndeks; $('sonTarih').value = p.sonTarih;
-    $('katsayi').value = p.katsayi; $('guncel').value = p.guncel;
+  if (guncel < onceki) {
+    $('sonuc').innerHTML = `<div class="hint warn">Sayaçtaki değer, son fatura endeksinden küçük olamaz.</div>`;
+    return;
   }
-
-  function goster() {
-    const p = P();
-    const endeks = parseFloat($('guncel').value);
-    if (isNaN(endeks)) { $('sonuc').innerHTML = `<div class="hint">Sayaçtaki değeri girince tahmini fatura burada görünür.</div>`; return; }
-    if (endeks < p.sonEndeks) { $('sonuc').innerHTML = `<div class="hint warn">Girdiğin değer son fatura endeksinden (${nm(p.sonEndeks, 0)}) küçük.</div>`; return; }
-    const r = hesapla(p, endeks, $('bugun').value);
-    const satir = (a, b, s) => `<div class="line${s ? ' s' : ''}"><span>${a}</span><span>${b}</span></div>`;
-    let h = satir("Dönem", `${r.D} gün`) +
-            satir("Tüketim", `${nm(r.m3, 1)} m³ · ${nm(r.sm3, 1)} Sm³ · ${nm(r.kwh, 0)} kWh`) +
-            satir("Günlük ortalama", `${nm(r.m3 / r.D, 2)} m³`);
-    if (r.eski > 0) h += satir(`Eski tarife (${r.eski} gün)`, tl(r.tEski)) + satir(`${nm(r.sm3Eski, 2)} Sm³ × ${nm(TARIFE.eskiFiyat, 3)}`, "", true);
-    h += satir("Kademe-1", tl(r.t1)) + satir(`${nm(r.k1, 2)} Sm³ × ${nm(TARIFE.araliklar[p.aralik].k1, 4)}`, "", true);
-    h += satir("Kademe-2 (limit üstü)", tl(r.t2)) + satir(`${nm(r.k2, 2)} Sm³ × ${nm(TARIFE.araliklar[p.aralik].k2, 4)}`, "", true);
-    h += r.yeni > 0
-      ? satir("Kademe-1'de kalan hak", `${nm(r.kalan, 1)} Sm³ ≈ ${nm(r.kalan / p.katsayi, 1)} m³`)
-      : "";
-    h += `<div class="total"><b>Tahmini tutar</b><span class="amt">${tl(r.yuvarlak)}</span></div>`;
-    if (r.k2 > 0 && r.yeni > 0) h += `<div class="hint warn">Kademe-1 hakkını aştın; fazlası pahalı fiyattan hesaplanıyor.</div>`;
-    $('sonuc').innerHTML = h;
-  }
-
-  $('profil').addEventListener('change', () => { state.aktif = +$('profil').value; kaydet(); formuDoldur(); goster(); });
-  ['ad', 'il', 'aralik', 'sonEndeks', 'sonTarih', 'katsayi', 'guncel'].forEach(id => $(id).addEventListener('input', () => {
-    const p = P();
-    p.ad = $('ad').value || "Sayaç"; p.il = $('il').value; p.aralik = $('aralik').value;
-    p.sonEndeks = parseFloat($('sonEndeks').value) || 0; p.sonTarih = $('sonTarih').value || p.sonTarih;
-    p.katsayi = parseFloat($('katsayi').value) || 1.03; p.guncel = $('guncel').value;
-    kaydet(); if (id === 'ad') profilListesi(); goster();
-  }));
-  $('bugun').addEventListener('input', goster);
-
-  $('faturaGeldi').addEventListener('click', () => {
-    const endeks = parseFloat($('guncel').value);
-    if (isNaN(endeks)) { alert("Önce faturadaki son endeksi 'sayaç değeri' alanına yaz."); return; }
-    const p = P(); p.sonEndeks = endeks; p.sonTarih = $('bugun').value; p.guncel = "";
-    kaydet(); formuDoldur(); goster();
-  });
-  $('ekle').addEventListener('click', () => {
-    state.profiller.push({ ad: "Sayaç " + (state.profiller.length + 1), il: "Kırklareli", aralik: "0 - 100 m³", sonEndeks: 0, sonTarih: bugunStr(), katsayi: 1.03, guncel: "" });
-    state.aktif = state.profiller.length - 1; kaydet(); profilListesi(); formuDoldur(); goster();
-  });
-  $('sil').addEventListener('click', () => {
-    if (state.profiller.length < 2) return;
-    state.profiller.splice(state.aktif, 1); state.aktif = 0; kaydet(); profilListesi(); formuDoldur(); goster();
-  });
-
-  profilListesi(); formuDoldur(); goster();
+  const r = hesapla(onceki, guncel);
+  let h = `<div class="total"><small>Bugüne kadar yaktığın (tahmini)</small><span class="amt">${tl(Math.round(r.toplam))}</span></div>
+    <div class="line"><span>Tüketim</span><span>${nm(r.m3)} m³ · ${nm(r.kwh, 0)} kWh</span></div>
+    <div class="line"><span>Ucuz kademe (Kademe-1)</span><span>${tl(r.t1)}</span></div>`;
+  if (r.t2 > 0) h += `<div class="line"><span>Limit üstü (Kademe-2)</span><span>${tl(r.t2)}</span></div>`;
+  h += r.t2 > 0
+    ? `<div class="hint warn">Aylık ucuz kademe hakkını aştın; fazlası pahalı fiyattan hesaplanıyor.</div>`
+    : `<div class="line"><span>Ucuz kademede kalan hak</span><span>≈ ${nm(r.kalanM3)} m³</span></div>`;
+  h += `<div class="hint">Fatura kesildiğinde tutar, o güne kadar yakacağın gazla birlikte bundan yüksek olur. Tahmin yaklaşık ±%2 sapabilir.</div>`;
+  $('sonuc').innerHTML = h;
 }
+
+try {
+  const s = JSON.parse(localStorage.getItem('gaz2') || 'null');
+  if (s) { $('onceki').value = s.o; $('guncel').value = s.g; }
+} catch (e) {}
+$('onceki').addEventListener('input', goster);
+$('guncel').addEventListener('input', goster);
+goster();
 </script>
 </body>
 </html>
