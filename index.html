@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Doğalgaz Tahmini</title>
 <style>
-  :root { --bg:#0b1120; --card:#111827; --line:#1f2937; --txt:#f1f5f9; --mut:#94a3b8; --acc:#60a5fa; --warn:#fbbf24; }
+  :root { --bg:#0b1120; --card:#111827; --line:#1f2937; --txt:#f1f5f9; --mut:#94a3b8; --acc:#60a5fa; --ok:#34d399; --warn:#fbbf24; }
   * { box-sizing:border-box; }
   body { margin:0; background:var(--bg); color:var(--txt); font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; display:flex; justify-content:center; padding:16px; }
   .wrap { width:100%; max-width:440px; display:flex; flex-direction:column; gap:14px; }
@@ -14,12 +14,14 @@
   label { display:block; font-size:12px; color:var(--mut); margin:14px 0 4px; }
   input { width:100%; background:var(--bg); color:var(--txt); border:1px solid #374151; border-radius:12px; padding:14px; font-size:26px; font-weight:700; text-align:center; }
   input:focus { outline:none; border-color:var(--acc); }
-  .line { display:flex; justify-content:space-between; gap:8px; padding:8px 0; font-size:14px; border-bottom:1px dashed var(--line); }
+  .line { display:flex; justify-content:space-between; gap:8px; padding:9px 0; font-size:15px; border-bottom:1px dashed var(--line); }
   .line span:first-child { color:var(--mut); }
-  .total { text-align:center; padding:6px 0 2px; }
-  .total small { display:block; font-size:12px; color:var(--mut); }
-  .total .amt { font-size:38px; font-weight:800; color:var(--acc); }
-  .hint { font-size:12px; color:var(--mut); line-height:1.5; margin-top:8px; }
+  .line.sub { font-size:12px; padding:5px 0 5px 10px; }
+  .line .ok { color:var(--ok); font-weight:600; }
+  .total { display:flex; justify-content:space-between; align-items:baseline; padding-top:14px; }
+  .total b { font-size:15px; }
+  .total .amt { font-size:32px; font-weight:800; color:var(--acc); }
+  .hint { font-size:12px; color:var(--mut); line-height:1.5; margin-top:10px; }
   .warn { color:var(--warn); }
   .note { font-size:11px; color:var(--mut); line-height:1.5; text-align:center; }
 </style>
@@ -47,8 +49,9 @@ const TARIFE = {
   isilDeger: 10.64,     // kWh / Sm3
   katsayi: 1.02,        // m3 -> Sm3 (faturalarda 1,012 - 1,034 arası çıktı)
   aylikLimit: 39.88,    // Kırklareli aylık Kademe-1 limiti (Sm3)
-  k1: 16.908506,        // Kademe-1 fiyatı
-  k2: 25.758506         // Kademe-2 (limit üstü) fiyatı
+  brut: 39.56,          // desteksiz fiyat (faturadan çıkarım: tüketim bedeli / düzeltilmiş hacim)
+  k1: 16.908506,        // Kademe-1 net fiyatı (destek düşülmüş)
+  k2: 25.758506         // Kademe-2 net fiyatı (destek düşülmüş)
 };
 
 const $ = id => document.getElementById(id);
@@ -61,14 +64,17 @@ function hesapla(onceki, guncel) {
   const k1Sm3 = Math.min(sm3, TARIFE.aylikLimit);
   const k2Sm3 = sm3 - k1Sm3;
   const t1 = k1Sm3 * TARIFE.k1, t2 = k2Sm3 * TARIFE.k2;
-  return { m3, sm3, kwh: sm3 * TARIFE.isilDeger, t1, t2, toplam: t1 + t2,
+  const net = t1 + t2;
+  const brut = sm3 * TARIFE.brut;
+  return { m3, sm3, kwh: sm3 * TARIFE.isilDeger, k1Sm3, k2Sm3, t1, t2, net, brut,
+           destek: brut - net,
            kalanM3: Math.max(0, TARIFE.aylikLimit - sm3) / TARIFE.katsayi };
 }
 
 function goster() {
   const onceki = parseFloat($('onceki').value);
   const guncel = parseFloat($('guncel').value);
-  try { localStorage.setItem('gaz2', JSON.stringify({ o: $('onceki').value, g: $('guncel').value })); } catch (e) {}
+  try { localStorage.setItem('gaz3', JSON.stringify({ o: $('onceki').value, g: $('guncel').value })); } catch (e) {}
 
   if (isNaN(onceki) || isNaN(guncel)) {
     $('sonuc').innerHTML = `<div class="hint">İki endeksi girince sonuç burada görünür.</div>`;
@@ -79,19 +85,26 @@ function goster() {
     return;
   }
   const r = hesapla(onceki, guncel);
-  let h = `<div class="total"><small>Bugüne kadar yaktığın (tahmini)</small><span class="amt">${tl(Math.round(r.toplam))}</span></div>
+  let h = `
     <div class="line"><span>Tüketim</span><span>${nm(r.m3)} m³ · ${nm(r.kwh, 0)} kWh</span></div>
-    <div class="line"><span>Ucuz kademe (Kademe-1)</span><span>${tl(r.t1)}</span></div>`;
-  if (r.t2 > 0) h += `<div class="line"><span>Limit üstü (Kademe-2)</span><span>${tl(r.t2)}</span></div>`;
+    <div class="line"><span>Desteksiz tutar</span><span>${tl(r.brut)}</span></div>
+    <div class="line sub"><span>${nm(r.sm3, 2)} Sm³ × ${nm(TARIFE.brut, 2)} TL</span><span></span></div>
+    <div class="line"><span>Devlet desteği</span><span class="ok">− ${tl(r.destek)}</span></div>
+    <div class="line"><span>Ucuz kademe (Kademe-1)</span><span>${tl(r.t1)}</span></div>
+    <div class="line sub"><span>${nm(r.k1Sm3, 2)} Sm³ × ${nm(TARIFE.k1, 4)} (net)</span><span></span></div>`;
+  if (r.t2 > 0) h += `
+    <div class="line"><span>Limit üstü (Kademe-2)</span><span>${tl(r.t2)}</span></div>
+    <div class="line sub"><span>${nm(r.k2Sm3, 2)} Sm³ × ${nm(TARIFE.k2, 4)} (net)</span><span></span></div>`;
+  h += `<div class="total"><b>Ödenecek net tutar</b><span class="amt">${tl(Math.round(r.net))}</span></div>`;
   h += r.t2 > 0
     ? `<div class="hint warn">Aylık ucuz kademe hakkını aştın; fazlası pahalı fiyattan hesaplanıyor.</div>`
-    : `<div class="line"><span>Ucuz kademede kalan hak</span><span>≈ ${nm(r.kalanM3)} m³</span></div>`;
-  h += `<div class="hint">Fatura kesildiğinde tutar, o güne kadar yakacağın gazla birlikte bundan yüksek olur. Tahmin yaklaşık ±%2 sapabilir.</div>`;
+    : `<div class="hint">Ucuz kademede kalan hak: ≈ ${nm(r.kalanM3)} m³</div>`;
+  h += `<div class="hint">Bugüne kadarki tahmini tutar. Fatura kesilene kadar yakacağın gazla artar. Desteksiz fiyat faturalardan çıkarımdır ve zamanla değişebilir; tahmin yaklaşık ±%2 sapabilir.</div>`;
   $('sonuc').innerHTML = h;
 }
 
 try {
-  const s = JSON.parse(localStorage.getItem('gaz2') || 'null');
+  const s = JSON.parse(localStorage.getItem('gaz3') || 'null');
   if (s) { $('onceki').value = s.o; $('guncel').value = s.g; }
 } catch (e) {}
 $('onceki').addEventListener('input', goster);
