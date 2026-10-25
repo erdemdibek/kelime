@@ -18,13 +18,13 @@
         <!-- Form Alanı -->
         <div class="space-y-4">
             <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1">Önceki Fatura Endeksi ($m^3$)</label>
-                <input type="number" id="baslangicEndeks" value="4683" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 text-lg">
+                <label class="block text-xs font-medium text-slate-300 mb-1">Önceki Fatura Endeksi (m³)</label>
+                <input type="number" id="baslangicEndeks" value="4683" oninput="hesapla()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 text-lg">
             </div>
 
             <div>
-                <label class="block text-xs font-medium text-slate-300 mb-1">Şu Anki Sayaç Endeksi ($m^3$)</label>
-                <input type="number" id="guncelEndeks" value="4740" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 text-lg" oninput="hesapla()">
+                <label class="block text-xs font-medium text-slate-300 mb-1">Şu Anki Sayaç Endeksi (m³)</label>
+                <input type="number" id="guncelEndeks" value="4740" oninput="hesapla()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-blue-500 text-lg">
             </div>
         </div>
 
@@ -40,7 +40,7 @@
             </div>
             <div class="border-t border-slate-800 pt-3 flex justify-between items-center">
                 <span class="text-base font-bold text-white">Ödenecek Tutar:</span>
-                <span id="odenecek Tutar" class="text-2xl font-black text-blue-400">0 TL</span>
+                <span id="odenecekTutar" class="text-2xl font-black text-blue-400">0 TL</span>
             </div>
         </div>
 
@@ -54,23 +54,18 @@
             const tuketim = Math.max(0, guncel - baslangic);
             document.getElementById('tuketimMiktari').innerText = tuketim.toFixed(2) + " m³";
 
-            // Sabit katsayılar ve birim fiyatlar (Gazdaş Trakya Tarifesi)
-            const isilDeger = 11.0161;
             const katsayi = 0.98665;
-            const kdvDahilBirimFiyat = 16.908506; // TL/Sm3
+            const kdvDahilBirimFiyat = 16.908506; 
 
-            // Sm3 hesaplama
             const sm3Tuketim = tuketim * katsayi;
-            const ham Tutar = sm3Tuketim * kdvDahilBirimFiyat;
+            const hamTutar = sm3Tuketim * kdvDahilBirimFiyat;
 
-            // Faturadaki orantısal devlet desteği (yaklaşık %35 civarı destek oranı)
-            // 24 m3'te 970 TL tutar, 340 TL destek alıp 630 TL'ye düşmüştü.
             const destekOrani = 340.08 / 970.74; 
-            const devletDestegiTutar = ham Tutar * destekOrani;
-            const net Tutar = ham Tutar - devletDestegiTutar;
+            const devletDestegiTutar = hamTutar * destekOrani;
+            const netTutar = hamTutar - devletDestegiTutar;
 
             document.getElementById('devletDestegi').innerText = "-" + devletDestegiTutar.toFixed(2) + " TL";
-            document.getElementById('odenecek Tutar').innerText = net Tutar.toFixed(2) + " TL";
+            document.getElementById('odenecekTutar').innerText = netTutar.toFixed(2) + " TL";
         }
 
         // Sayfa açıldığında ilk hesaplamayı yap
